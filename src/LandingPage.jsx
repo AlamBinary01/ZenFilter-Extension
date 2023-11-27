@@ -1,6 +1,9 @@
 import React from "react";
 import styled from "styled-components";
-import { Link } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
+import Appi from "./Appi";
+import App from "./LoginForm.jsx";
+import { Routes,Route } from "react-router-dom";
 
 const LandingContainer = styled.div`
   display: flex;
@@ -10,10 +13,9 @@ const LandingContainer = styled.div`
   align-items: center;
   justify-content: center;
   background-color: #000000;
-  width: 400px;
-  height: 450px;
+  width: 678px;
   max-width: 100%;
-  min-height: 100px;
+  min-height: 400px;
 `;
 
 const Title = styled.h1`
@@ -33,7 +35,7 @@ const Paragraph = styled.p`
   width: 60%;
 `;
 
-const GetStartedButton = styled(Link)`
+const GetStartedButton = styled.button`
   border-radius: 20px;
   border: 1px solid #e67315;
   background-color: #e67315;
@@ -55,9 +57,14 @@ const GetStartedButton = styled(Link)`
 `;
 
 const LandingPage = () => {
-  console.log("component rendered");
+  const navigate = useNavigate();
   return (
     <LandingContainer>
+      <div className="App">
+            <Routes>
+                <Route path="/Login" element={<App/>}/>
+            </Routes>
+        </div>
       <Title>Welcome to Zen-Filter</Title>
       <Paragraph>
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin fringilla
@@ -65,9 +72,10 @@ const LandingPage = () => {
         libero fringilla fermentum vitae eget sem. Nullam vel sollicitudin neque.
         Mauris bibendum purus ut aliquam feugiat. Donec eu velit risus.
       </Paragraph>
-      <GetStartedButton to="/login">Get Started</GetStartedButton>
+      <GetStartedButton onClick={()=>navigate("/Login")}>Get Started</GetStartedButton>
     </LandingContainer>
   );
 };
 
 export default LandingPage;
+
