@@ -170,3 +170,13 @@ export const Paragraph = styled.p`
     text-align: center; /* Corrected the property name */
     width:100%;
 `;
+
+export const StyledImage = styled.img`
+  position: absolute; // Position the image absolutely within the container
+  top: 0; // Align to the top
+  left: -40px; // Align to the left
+  width: 35%; // Set the width to 100% to make it responsive
+  max-height: 70px; // Set the maximum height if needed
+  object-fit: cover; // Maintain the aspect ratio while covering the container
+`;
+

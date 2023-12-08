@@ -1,21 +1,22 @@
 import React from "react";
 import styled from "styled-components";
-import { useNavigate } from "react-router-dom";
-import Appi from "./Appi";
-import App from "./LoginForm.jsx";
-import { Routes,Route } from "react-router-dom";
 
 const LandingContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  border-radius: 10px;
-  border: solid 4px #f79817;
-  align-items: center;
-  justify-content: center;
-  background-color: #000000;
-  width: 678px;
-  max-width: 100%;
-  min-height: 400px;
+display: flex;
+flex-direction: column;
+border-radius: 10px;
+border: solid 4px #f79817;
+align-items: center;
+justify-content: center;
+background-color: #000000;
+width: 678px;
+max-width: 100%;
+min-height: 400px;
+position: relative; /* Make the container a positioning context */
+overflow: hidden; /* Hide overflow to ensure the image is contained within the container */
+background-image: url('/images/bg1.jpg'); /* Replace with the path to your image */
+background-size: cover; /* Ensures the image covers the entire container */
+background-position: center; /* Centers the image */
 `;
 
 const Title = styled.h1`
@@ -54,25 +55,27 @@ const GetStartedButton = styled.button`
   &:focus {
     outline: none;
   }
+`
+
+const StyledImage = styled.img`
+  position: absolute; // Position the image absolutely within the container
+  top: 0; // Align to the top
+  left: -40px; // Align to the left
+  width: 35%; // Set the width to 100% to make it responsive
+  max-height: 70px; // Set the maximum height if needed
+  object-fit: cover; // Maintain the aspect ratio while covering the container
 `;
 
+
 const LandingPage = () => {
-  const navigate = useNavigate();
   return (
     <LandingContainer>
-      <div className="App">
-            <Routes>
-                <Route path="/Login" element={<App/>}/>
-            </Routes>
-        </div>
+      <StyledImage src="/images/VAR.png" alt="Your Alt Text Here" />
       <Title>Welcome to Zen-Filter</Title>
       <Paragraph>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin fringilla
-        augue nec lacus maximus, sit amet tempus justo efficitur. Sed id orci at
-        libero fringilla fermentum vitae eget sem. Nullam vel sollicitudin neque.
-        Mauris bibendum purus ut aliquam feugiat. Donec eu velit risus.
+      In our digital age, where young users navigate the online world, Zen-Filter is your ally in creating a secure internet space. Our smart system uses advanced technology to identify and block explicit and violent content in real-time, ensuring a safe online experience for users under 18. Empowering parents, Zen-Filter provides easy control over their children's online activities while promoting exploration and learning.
       </Paragraph>
-      <GetStartedButton onClick={()=>navigate("/Login")}>Get Started</GetStartedButton>
+      <GetStartedButton>Get Started</GetStartedButton>
     </LandingContainer>
   );
 };
