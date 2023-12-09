@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 
 export const Container = styled.div`
 background-color: #000000;
@@ -173,10 +173,35 @@ export const Paragraph = styled.p`
 
 export const StyledImage = styled.img`
   position: absolute; // Position the image absolutely within the container
-  top: 0; // Align to the top
-  left: -40px; // Align to the left
+  top: -8px; // Align to the top
+  left: -15px; // Align to the left
   width: 35%; // Set the width to 100% to make it responsive
   max-height: 70px; // Set the maximum height if needed
   object-fit: cover; // Maintain the aspect ratio while covering the container
 `;
+export const fadeIn = keyframes`
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+`;
+
+export const fadeOut = keyframes`
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+`;
+
+// Container with fade-in and fade-out animation based on the state
+export const AnimatedContainer = styled.div`
+  opacity: ${({ isVisible }) => (isVisible ? 1 : 0)};
+  transition: opacity 0.5s ease-in-out;
+  animation: ${({ isVisible }) => (isVisible ? fadeIn : fadeOut)} 0.5s ease-in-out;
+`;
+
 

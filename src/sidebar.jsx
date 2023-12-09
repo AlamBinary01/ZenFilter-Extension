@@ -1,69 +1,59 @@
-// WelcomePage.jsx
+import React from 'react'
+import 
+{BsCart3, BsGrid1X2Fill, BsFillArchiveFill, BsFillGrid3X3GapFill, BsPeopleFill, 
+  BsListCheck, BsMenuButtonWideFill, BsFillGearFill}
+ from 'react-icons/bs'
 
-import React, { useState } from "react";
-import styled from "styled-components";
 
-const WelcomeContainer = styled.div`
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start; /* Align items to the start (left) */
-  justify-content: center;
-  min-height: 100vh;
-  padding: 10px; /* Add padding to create space for the ToggleButton */
-  background-color: #000000;
-  color: #f79817;
-`;
-
-const ToggleButton = styled.button`
-  position: absolute;
-  top: 10px;
-  left: -180px;
-  background-color: transparent;
-  border: none;
-  color: #f79817;
-  font-size: 24px;
-  cursor: pointer;
-`;
-
-const Sidebar = styled.div`
-  position: fixed;
-  top: 60px; /* Adjust the top value as needed */
-  left: ${({ isOpen }) => (isOpen ? "0" : "-250px")};
-  width: 250px;
-  height: calc(100% - 60px); /* Adjust the height value as needed */
-  background-color: #000000;
-  transition: left 0.3s ease-in-out;
-`;
-
-const SidebarButton = styled.button`
-  background-color: transparent;
-  border: none;
-  color: #f79817;
-  font-size: 16px;
-  margin: 10px;
-  cursor: pointer;
-`;
-
-const WelcomePage = () => {
-  const [isSidebarOpen, setSidebarOpen] = useState(false);
-
-  const toggleSidebar = () => {
-    setSidebarOpen(!isSidebarOpen);
-  };
-
+function Sidebar({openSidebarToggle, toggleSidebar }) {
   return (
-    <WelcomeContainer>
-      <ToggleButton onClick={toggleSidebar}>☰</ToggleButton>
-      <h1>Welcome to Zen-Filter</h1>
-      <Sidebar isOpen={isSidebarOpen}>
-        <SidebarButton>Options</SidebarButton>
-        <SidebarButton>Preferences</SidebarButton>
-        <SidebarButton>Help</SidebarButton>
-        <SidebarButton>About Me</SidebarButton>
-      </Sidebar>
-    </WelcomeContainer>
-  );
-};
+    <aside id="sidebar" className={openSidebarToggle ? "sidebar-responsive": ""}>
+        <div className='sidebar-title'>
+            <div className='sidebar-brand'>
+                <BsCart3  className='icon_header'/> Zen Filter
+            </div>
+            <span className='icon close_icon' onClick={toggleSidebar}>X</span>
+        </div>
 
-export default WelcomePage;
+        <ul className='sidebar-list'>
+            <li className='sidebar-list-item'>
+                <a href="">
+                    <BsGrid1X2Fill className='icon'/> Dashboard
+                </a>
+            </li>
+            <li className='sidebar-list-item'>
+                <a href="">
+                    <BsFillArchiveFill className='icon'/> Preferences
+                </a>
+            </li>
+            <li className='sidebar-list-item'>
+                <a href="">
+                    <BsFillGrid3X3GapFill className='icon'/> Block Website
+                </a>
+            </li>
+            <li className='sidebar-list-item'>
+                <a href="">
+                    <BsPeopleFill className='icon'/> Block App
+                </a>
+            </li>
+            <li className='sidebar-list-item'>
+                <a href="">
+                    <BsListCheck className='icon'/> History
+                </a>
+            </li>
+            <li className='sidebar-list-item'>
+                <a href="">
+                    <BsMenuButtonWideFill className='icon'/> About
+                </a>
+            </li>
+            <li className='sidebar-list-item'>
+                <a href="">
+                    <BsFillGearFill className='icon'/> Settings
+                </a>
+            </li>
+        </ul>
+    </aside>
+  )
+}
+
+export default Sidebar;

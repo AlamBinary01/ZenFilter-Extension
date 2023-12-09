@@ -1,26 +1,31 @@
-import React from "react";
-import ReactDOM from "react-dom";
-import  LandingPage from "./LandingPage.jsx";
-import App from "./loginForm.jsx";
-import { BrowserRouter } from "react-router-dom";
-import WelcomePage from "./sidebar.jsx";
+import React, { useState } from "react";
+import { render } from "react-dom";
+import LandingPage from "./LandingPage.jsx";
+import LoginForm from "./LoginForm.jsx";
 
-const root = ReactDOM.createRoot(document.getElementById("react-target"));
+function Popup() {
+  
+  const [showLoginForm, setShowLoginForm] = useState(false);
 
-root.render(
-    <React.StrictMode>
-        <BrowserRouter>
-        <App/>
-        </BrowserRouter>
-    </React.StrictMode>    
-)
+  const handleGetStartedClick = () => {
+    setShowLoginForm(true);
+  };
 
-// function Popup() {
-//     return (
-//         <div>
-//             <App/>
-//         </div>
-//     );
-// }
+  const handleSignIn = () => {
+    chrome.tabs.create({ url: 'dashboard.html' });
+  };
 
-// render(<Popup/>, document.getElementById("react-target"));
+  return (
+    <div>
+      {!showLoginForm ? (
+        <div>
+          <LandingPage onGetStartedClick={handleGetStartedClick} />
+        </div>
+      ) : (
+        <LoginForm onSignIn={handleSignIn} />
+      )}
+    </div>
+  );
+}
+
+render(<Popup />, document.getElementById("react-target"));

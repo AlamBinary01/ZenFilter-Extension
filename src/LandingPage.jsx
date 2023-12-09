@@ -67,7 +67,8 @@ const StyledImage = styled.img`
 `;
 
 
-const LandingPage = () => {
+const LandingPage = ({ onGetStartedClick }) => {
+
   return (
     <LandingContainer>
       <StyledImage src="/images/VAR.png" alt="Your Alt Text Here" />
@@ -75,7 +76,7 @@ const LandingPage = () => {
       <Paragraph>
       In our digital age, where young users navigate the online world, Zen-Filter is your ally in creating a secure internet space. Our smart system uses advanced technology to identify and block explicit and violent content in real-time, ensuring a safe online experience for users under 18. Empowering parents, Zen-Filter provides easy control over their children's online activities while promoting exploration and learning.
       </Paragraph>
-      <GetStartedButton>Get Started</GetStartedButton>
+      <GetStartedButton onClick={onGetStartedClick}>Get Started</GetStartedButton>
     </LandingContainer>
   );
 };

@@ -8,6 +8,7 @@ module.exports = {
   entry: {
     popup: './src/popup.jsx',
     loginForm: './src/LoginForm.jsx',
+    dashboard: './src/dashboard.js',
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
@@ -29,10 +30,6 @@ module.exports = {
           },
         },
       },
-      {
-        test: /\.css$/,
-        use: ['style-loader', 'css-loader'],
-      },
     ],
   },
   plugins: [
@@ -40,6 +37,11 @@ module.exports = {
       template: './src/popup.html',
       filename: 'popup.html',
       chunks: ['popup'],  
+  }),
+  new HtmlWebpackPlugin({
+    template: './src/dashboard.html', 
+    filename: 'dashboard.html', 
+    chunks: ['dashboard'], 
   }),
     new CopyPlugin({
       patterns: [{ from: "public" }],
