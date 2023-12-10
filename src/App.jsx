@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import './css/App.css';
 import Header from './Header.jsx';
-import Home from './Home.jsx';
 import Sidebar from './Sidebar.jsx';
+import Home from './Home.jsx';
 
 function App() {
-  const [openSidebarToggle, setOpenSidebarToggle] = useState(true);
+  const [openSidebarToggle, setOpenSidebarToggle] = useState(false);
 
   const toggleSidebar = () => {
     setOpenSidebarToggle(!openSidebarToggle);

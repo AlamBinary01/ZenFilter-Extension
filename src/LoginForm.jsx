@@ -2,8 +2,7 @@ import React from "react";
 import * as Components from './Components';
 
 function App({ onSignIn }) {
-
-    const [signIn, toggle] = React.useState(true);
+const [signIn, toggle] = React.useState(true);
 
     const handleSignIn = () => {
         if (onSignIn) {
@@ -11,6 +10,7 @@ function App({ onSignIn }) {
         }
       };
 
+    
      return(
          <Components.Container>
              <Components.SignUpContainer signinIn={signIn}>
@@ -54,7 +54,7 @@ function App({ onSignIn }) {
                            Enter Your personal details and start journey with us
                        </Components.Paragraph>
                            <Components.GhostButton onClick={() => toggle(false)}>
-                               Sigin Up
+                               Sign Up
                            </Components.GhostButton> 
                      </Components.RightOverlayPanel>
  

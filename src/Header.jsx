@@ -3,11 +3,11 @@ import
  {BsFillBellFill, BsFillEnvelopeFill, BsPersonCircle, BsSearch, BsJustify}
  from 'react-icons/bs'
 
-function Header({ toggleSidebar }) {
+function Header({OpenSidebar}) {
   return (
     <header className='header'>
         <div className='menu-icon'>
-            <BsJustify className='icon' onClick={ toggleSidebar }/>
+            <BsJustify className='icon' onClick={OpenSidebar}/>
         </div>
         <div className='header-left'>
             <BsSearch  className='icon'/>

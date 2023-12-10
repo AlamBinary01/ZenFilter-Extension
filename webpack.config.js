@@ -8,7 +8,7 @@ module.exports = {
   entry: {
     popup: './src/popup.jsx',
     loginForm: './src/LoginForm.jsx',
-    dashboard: './src/dashboard.js',
+    dashboard: './src/dashboard.jsx',
   },
   output: {
     path: path.resolve(__dirname, 'dist'),

@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { render } from "react-dom";
 import LandingPage from "./LandingPage.jsx";
-import LoginForm from "./LoginForm.jsx";
+import LoginForm from "./loginForm.jsx";
+import App from "./App.jsx";
 
 function Popup() {
   
@@ -12,7 +13,10 @@ function Popup() {
   };
 
   const handleSignIn = () => {
-    chrome.tabs.create({ url: 'dashboard.html' });
+    chrome.tabs.create({ url: './dashboard.html', active : true },  function(newTab) {
+      console.log('New tab created:', newTab);
+      // Handle the details of the new tab
+    });
   };
 
   return (
@@ -23,9 +27,10 @@ function Popup() {
         </div>
       ) : (
         <LoginForm onSignIn={handleSignIn} />
-      )}
+      )
+      }
     </div>
   );
 }
 
-render(<Popup />, document.getElementById("react-target"));
+render(<Popup/>, document.getElementById("react-target"));
