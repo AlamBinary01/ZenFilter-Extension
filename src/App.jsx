@@ -3,9 +3,10 @@ import './css/App.css';
 import Header from './Header.jsx';
 import Sidebar from './Sidebar.jsx';
 import Home from './Home.jsx';
-
+import Services from './aboutus.jsx';
 function App() {
   const [openSidebarToggle, setOpenSidebarToggle] = useState(false);
+  const [showAboutPage, setAboutPage] = useState(false);
 
   const toggleSidebar = () => {
     setOpenSidebarToggle(!openSidebarToggle);
@@ -14,8 +15,8 @@ function App() {
   return (
     <div className='grid-container'>
       <Header toggleSidebar={toggleSidebar} />
-      <Sidebar openSidebarToggle={openSidebarToggle} toggleSidebar={toggleSidebar} />
-      <Home />
+      <Sidebar  setAboutPage={setAboutPage} />
+      {showAboutPage ? <Services /> : <Home />}
     </div>
   );
 }

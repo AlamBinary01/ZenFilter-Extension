@@ -3,15 +3,30 @@ import
 {BsCart3, BsGrid1X2Fill, BsFillArchiveFill, BsFillGrid3X3GapFill, BsPeopleFill, 
   BsListCheck, BsMenuButtonWideFill, BsFillGearFill}
  from 'react-icons/bs'
+ import styled from "styled-components";
 
-function Sidebar({openSidebarToggle, OpenSidebar}) {
+ const StyledImage = styled.img`
+ position: absolute; // Position the image absolutely within the container
+ top: -50px; // Align to the top
+ left: -20px; // Align to the left
+ width: 15%; // Set the width to 100% to make it responsive
+ height: 25%; // Set the maximum height if needed
+ object-fit: cover; // Maintain the aspect ratio while covering the container
+`;
+
+ function Sidebar({ openSidebarToggle, toggleSidebar, setAboutPage }) {
+    const handleAboutClick = () => {
+      setAboutPage(true);
+      toggleSidebar(); 
+    };
+
   return (
     <aside id="sidebar" className={openSidebarToggle ? "sidebar-responsive": ""}>
         <div className='sidebar-title'>
             <div className='sidebar-brand'>
-                <BsCart3  className='icon_header'/> Zen Filter
+                <StyledImage src="/images/VAR.png" alt = 'logo'/>
             </div>
-            <span className='icon close_icon' onClick={OpenSidebar}>X</span>
+            <span className='icon close_icon' onClick={openSidebarToggle}>X</span>
         </div>
 
         <ul className='sidebar-list'>
@@ -40,10 +55,8 @@ function Sidebar({openSidebarToggle, OpenSidebar}) {
                     <BsListCheck className='icon'/> History
                 </a>
             </li>
-            <li className='sidebar-list-item'>
-                <a href="">
+            <li className='sidebar-list-item' onClick= {handleAboutClick}>
                     <BsMenuButtonWideFill className='icon'/> About
-                </a>
             </li>
             <li className='sidebar-list-item'>
                 <a href="">

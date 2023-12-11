@@ -58,38 +58,38 @@ function Home() {
   return (
     <main className='main-container'>
         <div className='main-title'>
-            <h3>DASHBOARD</h3>
+            <h2>DASHBOARD</h2>
         </div>
 
         <div className='main-cards'>
             <div className='card'>
                 <div className='card-inner'>
-                    <h3>PREFERENCES</h3>
+                    <h4>Preferences</h4>
                     <BsFillArchiveFill className='card_icon'/>
                     {/* <button onClick={()=>naviagate("/app")}>PREFERENCES</button> */}
                 </div>
-                <h1>300</h1>
+                <h3>300</h3>
             </div>
             <div className='card'>
                 <div className='card-inner'>
-                    <h3>BLOCK WEBSITE</h3>
+                    <h4>Block Website</h4>
                     <BsFillGrid3X3GapFill className='card_icon'/>
                 </div>
-                <h1>12</h1>
+                <h3>12</h3>
             </div>
             <div className='card'>
                 <div className='card-inner'>
-                    <h3>BLOCK APP</h3>
+                    <h4>Block App</h4>
                     <BsPeopleFill className='card_icon'/>
                 </div>
-                <h1>33</h1>
+                <h3>33</h3>
             </div>
             <div className='card'>
                 <div className='card-inner'>
-                    <h3>HISTORY</h3>
+                    <h4>History</h4>
                     <BsFillBellFill className='card_icon'/>
                 </div>
-                <h1>42</h1>
+                <h3>42</h3>
             </div>
         </div>
 
