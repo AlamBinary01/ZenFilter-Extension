@@ -7,6 +7,7 @@ import Preferences from './preferences.jsx';
 import Services from './aboutus.jsx';
 import BlockedAppsPage from './blockedapps.jsx';
 import BlockWebsitesPage from './blockedWebistes.jsx';
+import SettingsPage from './settings.jsx';
 
 function App() {
   const [openSidebarToggle, setOpenSidebarToggle] = useState(false);
@@ -14,6 +15,7 @@ function App() {
   const [showPreferencesPage, setPreferencesPage] = useState(false);
   const [showBlockedPage, setBlockedPage] = useState(false);
   const [showBlockedWebsites, setBlockedWebsites] = useState(false);
+  const [showSettings, setSettings] = useState(false);
 
   const toggleSidebar = () => {
     setOpenSidebarToggle(!openSidebarToggle);
@@ -25,6 +27,7 @@ function App() {
     setPreferencesPage(true);
     setBlockedPage(false);
     setBlockedWebsites(false);
+    setSettings(false);
     toggleSidebar(); 
 };
 
@@ -33,6 +36,7 @@ function App() {
     setPreferencesPage(false); // Make sure to set showPreferencesPage to false
     setBlockedPage(false);
     setBlockedWebsites(false);
+    setSettings(false);
     toggleSidebar();
 };
 
@@ -42,6 +46,7 @@ function App() {
     setPreferencesPage(false);
     setBlockedPage(true);
     setBlockedWebsites(false);
+    setSettings(false);
     toggleSidebar();
   }
 
@@ -51,17 +56,28 @@ function App() {
     setBlockedPage(false);
     setPreferencesPage(false);
     setBlockedWebsites(true);
+    setSettings(false);
+  }
+
+  const handleSettings = () => {
+    console.log("Navigating to blocked settings page");
+    setAboutPage(false);
+    setBlockedPage(false);
+    setPreferencesPage(false);
+    setBlockedWebsites(false);
+    setSettings(true);
   }
 
   return (
     <div className='grid-container'>
       <Header toggleSidebar={toggleSidebar} />
-      <Sidebar handleAboutClick={handleAboutClick} handlePreferencesClick={handlePreferencesClick} handleBlockClick={handleBlockClick} handleBlockWebsites={handleBlockWebsites}/>
+      <Sidebar handleAboutClick={handleAboutClick} handlePreferencesClick={handlePreferencesClick} handleBlockClick={handleBlockClick} handleBlockWebsites={handleBlockWebsites} handleSettings={handleSettings}/>
       {showAboutPage ? <Services /> : null}
       {showPreferencesPage ? <Preferences /> : null}
       {showBlockedPage ? <BlockedAppsPage/> : null}
       {showBlockedWebsites ? <BlockWebsitesPage/> : null}
-      {!showAboutPage && !showPreferencesPage  && !showBlockedPage && !showBlockedWebsites ? <Home /> : null}
+      {showSettings ? <SettingsPage/> : null}
+      {!showAboutPage && !showPreferencesPage  && !showBlockedPage && !showBlockedWebsites && !showSettings ? <Home /> : null}
     </div>
   );
 }

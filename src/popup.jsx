@@ -9,6 +9,7 @@
   import Preferences from "./preferences.jsx";
   import BlockedAppsPage from "./blockedapps.jsx";
   import BlockWebsitesPage from "./blockedWebistes.jsx";
+  import SettingsPage from "./settings.jsx";
 
   function Popup() {
     

@@ -4,15 +4,29 @@ import React, { useState } from 'react';
 const BlockWebsitesPage = () => {
   const [enteredUrl, setEnteredUrl] = useState('');
   const [blockedUrls, setBlockedUrls] = useState([]);
+  const [urlFormatError, setUrlFormatError] = useState('');
 
   const handleInputChange = (event) => {
     setEnteredUrl(event.target.value);
+    // Clear the error message when the user types in the input box
+    setUrlFormatError('');
+  };
+
+  const isValidUrl = (url) => {
+    // Simple URL validation, you can use a more robust validation approach
+    const urlPattern = /^https?:\/\/\S+/;
+    return urlPattern.test(url);
   };
 
   const handleAddUrl = () => {
     if (enteredUrl.trim() !== '') {
-      setBlockedUrls((prevUrls) => [...prevUrls, enteredUrl]);
-      setEnteredUrl('');
+      if (isValidUrl(enteredUrl)) {
+        setBlockedUrls((prevUrls) => [...prevUrls, enteredUrl]);
+        setEnteredUrl('');
+        setUrlFormatError('');
+      } else {
+        setUrlFormatError('Invalid URL format. Please enter a valid URL.');
+      }
     }
   };
 
@@ -35,6 +49,7 @@ const BlockWebsitesPage = () => {
           +
         </button>
       </div>
+      {urlFormatError && <p style={errorStyle}>{urlFormatError}</p>}
       <div style={emptyBoxStyle}>
         {blockedUrls.map((url, index) => (
           <div key={index} style={blockedUrlStyle}>
@@ -60,8 +75,9 @@ const containerStyle = {
 };
 
 const pageTitleStyle = {
-  borderBottom: '1px solid #ddd',
+  border: '3px solid #f79817',
   padding: '8px',
+  color : '#fff'
 };
 
 const inputContainerStyle = {
@@ -117,6 +133,12 @@ const deleteButtonStyle = {
   color: '#fff',
   cursor: 'pointer',
   border: '1px solid #f79817',
+};
+
+const errorStyle = {
+  color: 'red',
+  margin: '5px 0',
+  minWidth:'150%'
 };
 
 export default BlockWebsitesPage;
