@@ -38,12 +38,12 @@ import
             <li className='sidebar-list-item'>
                     <BsFillGrid3X3GapFill className='icon'/> Block Website
             </li>
-            <li className='sidebar-list-item' onClick={handleBlockClick}>
+            <li className='sidebar-list-item'>
                 <a href="">
                     <BsPeopleFill className='icon'/> Block App
                 </a>
             </li>
-            <li className='sidebar-list-item'>
+            <li className='sidebar-list-item' onClick={handleBlockClick}>
                 <a href="">
                     <BsListCheck className='icon'/> History
                 </a>
