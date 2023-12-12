@@ -5,15 +5,13 @@
 }
 
 body {
-  background: black;
+  background: #000000;
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
   font-family: "Montserrat", sans-serif;
   height: 400px;
-  width:678px;
+  margin: -20px 0 50px;
+  width: 678px;
 }
-
-
-

@@ -6,7 +6,7 @@
   "scripts": {
     "build": "webpack --config webpack.config.js",
     "check-duplicate-react": "npm ls react react-dom",
-    "lint": "eslint ./"
+    "lint": "eslint ./dist/dashboard.js"
   },
   "keywords": [],
   "author": "",

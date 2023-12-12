@@ -14,19 +14,14 @@ import
  object-fit: cover; // Maintain the aspect ratio while covering the container
 `;
 
- function Sidebar({ openSidebarToggle, toggleSidebar, setAboutPage }) {
-    const handleAboutClick = () => {
-      setAboutPage(true);
-      toggleSidebar(); 
-    };
-
+ function Sidebar({ openSidebarToggle, toggleSidebar, handleAboutClick, handlePreferencesClick, handleBlockClick}) {
   return (
     <aside id="sidebar" className={openSidebarToggle ? "sidebar-responsive": ""}>
         <div className='sidebar-title'>
             <div className='sidebar-brand'>
                 <StyledImage src="/images/VAR.png" alt = 'logo'/>
             </div>
-            <span className='icon close_icon' onClick={openSidebarToggle}>X</span>
+            <span className='icon close_icon' onClick={toggleSidebar}>X</span>
         </div>
 
         <ul className='sidebar-list'>
@@ -35,17 +30,15 @@ import
                     <BsGrid1X2Fill className='icon'/> Dashboard
                 </a>
             </li>
-            <li className='sidebar-list-item'>
+            <li className='sidebar-list-item' onClick={handlePreferencesClick}>
                 <a href="">
-                    <BsFillArchiveFill className='icon'/> Preferences
+                    <BsFillArchiveFill className='icon' /> Preferences
                 </a>
             </li>
             <li className='sidebar-list-item'>
-                <a href="">
                     <BsFillGrid3X3GapFill className='icon'/> Block Website
-                </a>
             </li>
-            <li className='sidebar-list-item'>
+            <li className='sidebar-list-item' onClick={handleBlockClick}>
                 <a href="">
                     <BsPeopleFill className='icon'/> Block App
                 </a>
