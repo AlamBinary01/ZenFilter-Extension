@@ -15,7 +15,12 @@
   "dependencies": {
     "@emotion/is-prop-valid": "^1.2.1",
     "@emotion/memoize": "^0.8.1",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
     "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongodb": "^6.3.0",
+    "mongoose": "^8.0.3",
     "nodemon": "^3.0.2",
     "react": "^18.2.0",
     "react-dnd": "9.2.1",
