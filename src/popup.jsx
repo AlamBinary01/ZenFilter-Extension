@@ -8,6 +8,7 @@
   import Sidebar from "./Sidebar.jsx";
   import Preferences from "./preferences.jsx";
   import BlockedAppsPage from "./blockedapps.jsx";
+  import BlockWebsitesPage from "./blockedWebistes.jsx";
 
   function Popup() {
     

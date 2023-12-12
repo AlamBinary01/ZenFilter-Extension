@@ -14,7 +14,7 @@ import
  object-fit: cover; // Maintain the aspect ratio while covering the container
 `;
 
- function Sidebar({ openSidebarToggle, toggleSidebar, handleAboutClick, handlePreferencesClick, handleBlockClick}) {
+ function Sidebar({ openSidebarToggle, toggleSidebar, handleAboutClick, handlePreferencesClick, handleBlockClick, handleBlockWebsites}) {
   return (
     <aside id="sidebar" className={openSidebarToggle ? "sidebar-responsive": ""}>
         <div className='sidebar-title'>
@@ -35,12 +35,9 @@ import
                     <BsFillArchiveFill className='icon' /> Preferences
                 </a>
             </li>
-            <li className='sidebar-list-item'>
-                    <BsFillGrid3X3GapFill className='icon'/> Block Website
-            </li>
-            <li className='sidebar-list-item'>
+            <li className='sidebar-list-item' onClick={handleBlockWebsites}>
                 <a href="">
-                    <BsPeopleFill className='icon'/> Block App
+                    <BsPeopleFill className='icon'/> Block Website
                 </a>
             </li>
             <li className='sidebar-list-item' onClick={handleBlockClick}>
