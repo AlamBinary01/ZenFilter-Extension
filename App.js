@@ -6,7 +6,7 @@ const cors = require("cors");
 const { error } = require("cli");
 const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken");
-const JWT_SECRET = "odwnfadsknkpdwngipwnvpwjiwon82748327fewiu34298332jpndvnndknda()cjhiohfidonflfndwlhciodshvncsondwohvwnkvodni";
+const JWT_SECRET = "odwnfadsknkpdwngipwnvpwjiwon82748327fewiu34298332jpndvnndknd";
 
 app.use(cors());
 
@@ -67,7 +67,7 @@ app.post("/register", async (req,res) => {
   } 
 });
 
-api.post("/login", async(req,res) => {
+app.post("/login", async(req,res) => {
   const {email , password} = req.body;
   const User = await user.findOne({email});
 
@@ -76,9 +76,20 @@ api.post("/login", async(req,res) => {
       return res.send({error:"User does not exist."});
     }
   
-  if(await bcrypt.compare(password,user.password))
+  if(await bcrypt.compare(password,User.password))
   {
     const token = jwt.sign({}, JWT_SECRET);
+
+    if(res.status(201))
+    {
+      return res.json({status:"ok", data: token});
+    }
+    else
+    {
+      return res.json({error:"error"});
+    }
   }
 
-})
+res.json({status:"error", error:"Invalid Password"});
+
+});

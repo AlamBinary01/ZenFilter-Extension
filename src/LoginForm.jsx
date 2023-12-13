@@ -1,7 +1,7 @@
 import React, {useState} from "react";
 import * as Components from './Components';
 
-function App({ onSignIn }) {
+function App() {
 
     const [state, setState] = useState({
         name: "",
@@ -9,15 +9,36 @@ function App({ onSignIn }) {
         password: ""
     });
 
+    const [s , ss] = useState({
+        email:"",
+        password:""
+    })
+
     const [signIn, toggle] = React.useState(true);
 
-        const handleSignIn = () => {
-            if (onSignIn) {
-            onSignIn();
-            }
+        const handleSignIn = (e) => {
+            e.preventDefault();
+            const {email, password} = s;
+            console.log(email, password);
+            fetch("http://localhost:5000/login",{
+                method:"POST",
+                crossDomain:true,
+                headers:{
+                    "Content-Type":"application/json",
+                    Accept:"application/json",
+                    "Access-Control-Allow-Origin":"*"
+                },
+                body:JSON.stringify({
+                    email,
+                    password,
+                }),
+            }).then((res) => res.json())
+              .then((data) => {
+                console.log(data, "userLogin");
+              })
         };
 
-        const handleSubmit = (e) => {
+        const handleSignUp = (e) => {
             e.preventDefault();
             const {name, email, password} = state;
             console.log(name, email, password);
@@ -49,7 +70,7 @@ function App({ onSignIn }) {
                      <Components.Input type='text' placeholder='Name' onChange={(e) => setState({ ...state, name: e.target.value })}/>
                      <Components.Input type='email' placeholder='Email' onChange={(e) => setState({ ...state, email: e.target.value })}/>
                      <Components.Input type='password' placeholder='Password' onChange={(e) => setState({ ...state, password: e.target.value })}/>
-                     <Components.Button onClick={handleSubmit}>Sign Up</Components.Button>
+                     <Components.Button onClick={handleSignUp}>Sign Up</Components.Button>
                  </Components.Form>
              </Components.SignUpContainer>
 
@@ -57,8 +78,8 @@ function App({ onSignIn }) {
                   <Components.Form>
                       <Components.StyledImage src="/images/VAR.png" alt="Your Alt Text Here" />
                       <Components.Title>Sign in</Components.Title>
-                      <Components.Input type='email' placeholder='Email' />
-                      <Components.Input type='password' placeholder='Password' />
+                      <Components.Input type='email' placeholder='Email' onChange={(e) => ss({ ...s, email: e.target.value })}/>
+                      <Components.Input type='password' placeholder='Password' onChange={(e) => ss({ ...s, password: e.target.value })}/>
                       <Components.Anchor href='#'>Forgot your password?</Components.Anchor>
                       <Components.Button onClick={handleSignIn}>Sign In</Components.Button>
                   </Components.Form>
