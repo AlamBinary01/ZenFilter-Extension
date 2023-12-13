@@ -10,6 +10,7 @@
   import BlockedAppsPage from "./blockedapps.jsx";
   import BlockWebsitesPage from "./blockedWebistes.jsx";
   import SettingsPage from "./settings.jsx";
+  import ForgotPasswordPopup from "./forgotPassword.jsx";
 
   function Popup() {
     
@@ -39,4 +40,4 @@
     );
   }
 
-  render(<Popup/>, document.getElementById("react-target"));
+  render(<ForgotPasswordPopup/>, document.getElementById("react-target"));
