@@ -1,8 +1,31 @@
-// SettingsPage.jsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import './setting.css';
 
 const SettingsPage = () => {
+  const [userData, setUserData] = useState({
+    ud:""
+  });
+
+  useEffect(() => {
+    fetch("http://localhost:5000/userData", {
+      method: "POST",
+      crossDomain: true,
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        "Access-Control-Allow-Origin": "*"
+      },
+      body: JSON.stringify({
+        token: window.localStorage.getItem("token"),
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data, "userData");
+        setUserData({ud: data.data});
+      });
+  }, []);
+
   return (
     <div style={containerStyle}>
       <h2 style={pageTitleStyle}>Settings</h2>
@@ -11,8 +34,14 @@ const SettingsPage = () => {
       <div style={userInfoContainerStyle}>
         <div style={profilePictureStyle}> {/* Add your profile picture here */}</div>
         <div style={userInfoStyle}>
-          <p style={userNameStyle}>John Doe</p> {/* Replace with actual username */}
-          <p style={userEmailStyle}>john.doe@example.com</p> {/* Replace with actual user email */}
+        {userData.ud ? (
+            <>
+              <p style={userNameStyle}>{userData.ud.name}</p>
+              <p style={userEmailStyle}>{userData.ud.email}</p>
+            </>
+          ) : (
+            <p>Loading user data...</p>
+          )}
         </div>
       </div>
 
