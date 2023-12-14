@@ -22,62 +22,73 @@ function App() {
   };
 
   const handlePreferencesClick = () => {
-    console.log("Navigating to Preferences");
     setAboutPage(false);
     setPreferencesPage(true);
     setBlockedPage(false);
     setBlockedWebsites(false);
     setSettings(false);
-    toggleSidebar(); 
-};
+    toggleSidebar();
+  };
 
   const handleAboutClick = () => {
     setAboutPage(true);
-    setPreferencesPage(false); // Make sure to set showPreferencesPage to false
+    setPreferencesPage(false);
     setBlockedPage(false);
     setBlockedWebsites(false);
     setSettings(false);
     toggleSidebar();
-};
+  };
 
   const handleBlockClick = () => {
-    console.log("Navigating to block web");
     setAboutPage(false);
     setPreferencesPage(false);
     setBlockedPage(true);
     setBlockedWebsites(false);
     setSettings(false);
     toggleSidebar();
-  }
+  };
 
   const handleBlockWebsites = () => {
-    console.log("Navigating to blocked website page");
     setAboutPage(false);
     setBlockedPage(false);
     setPreferencesPage(false);
     setBlockedWebsites(true);
     setSettings(false);
-  }
+  };
 
   const handleSettings = () => {
-    console.log("Navigating to blocked settings page");
     setAboutPage(false);
     setBlockedPage(false);
     setPreferencesPage(false);
     setBlockedWebsites(false);
     setSettings(true);
-  }
+  };
+
+  const handleAddCustomPreference = () => {
+    // Handle redirection or additional logic when the "+" button is clicked
+    // For now, let's redirect to the BlockWebsitesPage
+    handleBlockWebsites();
+  };
 
   return (
     <div className='grid-container'>
       <Header toggleSidebar={toggleSidebar} />
-      <Sidebar handleAboutClick={handleAboutClick} handlePreferencesClick={handlePreferencesClick} handleBlockClick={handleBlockClick} handleBlockWebsites={handleBlockWebsites} handleSettings={handleSettings}/>
+      <Sidebar
+        handleAboutClick={handleAboutClick}
+        handlePreferencesClick={handlePreferencesClick}
+        handleBlockClick={handleBlockClick}
+        handleBlockWebsites={handleBlockWebsites}
+        handleSettings={handleSettings}
+        handleAddCustomPreference={handleAddCustomPreference}
+      />
       {showAboutPage ? <Services /> : null}
       {showPreferencesPage ? <Preferences /> : null}
-      {showBlockedPage ? <BlockedAppsPage/> : null}
-      {showBlockedWebsites ? <BlockWebsitesPage/> : null}
-      {showSettings ? <SettingsPage/> : null}
-      {!showAboutPage && !showPreferencesPage  && !showBlockedPage && !showBlockedWebsites && !showSettings ? <Home /> : null}
+      {showBlockedPage ? <BlockedAppsPage /> : null}
+      {showBlockedWebsites ? <BlockWebsitesPage /> : null}
+      {showSettings ? <SettingsPage /> : null}
+      {!showAboutPage && !showPreferencesPage && !showBlockedPage && !showBlockedWebsites && !showSettings ? (
+        <Home />
+      ) : null}
     </div>
   );
 }

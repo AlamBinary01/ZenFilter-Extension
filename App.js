@@ -7,6 +7,10 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const JWT_SECRET = "odwnfadsknkpdwngipwnvpwjiwon82748327fewiu34298332jpndvnndknd";
 const emailValidator = require("deep-email-validator");
+var nodemailer = require("nodemailer");
+
+app.set("view engine", "ejs");
+app.use(express.urlencoded({extended:false}));
 
 app.use(cors());
 
@@ -109,3 +113,96 @@ app.post("/userData", async (req, res) => {
     return res.send({ status: "error", error: "Invalid Token" });
   }
 });
+
+app.post("/forgotPassword", async(req,res) => {
+  const {email} = req.body;
+  try {
+    const oldUser = await User.findOne({email});
+    if(!oldUser)
+    {
+      return res.json({status:"User do not exist"});
+    }
+    const secret = JWT_SECRET + oldUser.password;
+    const token = jwt.sign({email: oldUser.email, id: oldUser._id }, secret, {
+      expiresIn:"5m",
+    });
+
+    const link = `http://localhost:5000/resetPassword/${oldUser._id}/${token}`;
+    var transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: 'f201121@cfd.nu.edu.pk',
+        pass: 'kwsa uqzc izco tfkj'
+      }
+    });
+    
+    var mailOptions = {
+      from: 'youremail@gmail.com',
+      to: email,
+      subject: 'Reset your password',
+      text: link
+    };
+    
+    transporter.sendMail(mailOptions, function(error, info){
+      if (error) {
+        console.log(error);
+      } else {
+        console.log('Email sent: ' + info.response);
+      }
+    });
+    console.log(link);
+  } catch (error) {}
+});
+
+app.get("/resetPassword/:id/:token", async (req, res) => {
+  const { id, token } = req.params;
+  console.log(req.params);
+
+  const oldUser = await User.findOne({ _id: id });
+  if (!oldUser) {
+    return res.json({ status: "User does not exist" });
+  }
+
+  const secret = JWT_SECRET + oldUser.password;
+
+  try {
+    const verify = jwt.verify(token, secret);
+    res.render("index", { email: verify.email, status: "Verified" });
+  } catch (error) {
+    res.render("index", { status: "Not Verified" });
+  }
+});
+
+app.post("/resetPassword/:id/:token", async(req,res) => {
+  const {id, token} = req.params;
+  const {password} = req.body;
+
+  const oldUser = await User.findOne({_id:id});
+  if(!oldUser)
+  {
+    return res.json({status:"User does not exist"});
+  }
+
+  const secret = JWT_SECRET + oldUser.password;
+
+  try {
+    const verify = jwt.verify(token,secret);
+    const encryptPass = await bcrypt.hash(password,10);
+    await User.updateOne(
+      {
+        _id: id,
+      },
+      {
+        $set:{
+          password : encryptPass,
+        },
+      }
+    );
+    res.json({status:"Password Updated"});
+    //res.render("index", {email:verify.email})
+    res.send("Verified");
+  } catch (error) {
+    res.json({status:"Something went wrong"});
+  }
+
+})

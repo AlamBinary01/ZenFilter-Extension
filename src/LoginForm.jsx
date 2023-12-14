@@ -11,7 +11,7 @@ function isValidPassword(password) {
   return passwordRegex.test(password);
 }
 
-function App() {
+function App({onForgetPassword}) {
   const [s, ss] = useState({
     email: "",
     password: "",
@@ -26,7 +26,7 @@ function App() {
   const [signIn, toggle] = React.useState(true);
   const [loginError, setLoginError] = useState(null);
   const [signupError, setSignupError] = useState(null);
-
+  
   const handleSignIn = (e) => {
     e.preventDefault();
     const { email, password } = s;
@@ -171,7 +171,7 @@ function App() {
           <Components.Input type="email" placeholder="Email" value={s.email} onChange={(e) => ss({ ...s, email: e.target.value })} />
           <Components.Input type="password" placeholder="Password" value={s.password} onChange={(e) => ss({ ...s, password: e.target.value })} />
           {loginError && <p>{loginError}</p>}
-          <Components.Anchor href="#">Forgot your password?</Components.Anchor>
+          <Components.Anchor href="#" onClick={onForgetPassword}>Forgot your password?</Components.Anchor>
           <Components.Button onClick={handleSignIn}>Sign In</Components.Button>
         </Components.Form>
       </Components.SignInContainer>

@@ -1,12 +1,7 @@
-.container {
-  opacity: 1;
-  transition: opacity 0.5s ease-in-out;
-}
-
-.fade-in {
-  opacity: 1;
-}
-
-.fade-out {
-  opacity: 0;
+.popup-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  margin: 0;  /* Adjust margin as needed */
 }

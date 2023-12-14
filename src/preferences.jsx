@@ -1,4 +1,6 @@
 // Preferences.jsx
+
+import './css/preferences.css'
 import React, { useState } from 'react';
 
 const Preferences = () => {
@@ -8,16 +10,11 @@ const Preferences = () => {
   const [customPreferences, setCustomPreferences] = useState('');
   const [customList, setCustomList] = useState([]);
 
-  const handleAddCustomPreference = () => {
-    if (customPreferences.trim() !== '') {
-      setCustomList([...customList, customPreferences]);
-      setCustomPreferences('');
-    }
-  };
-
   return (
     <div className="preferences-container">
-      <h2>Preferences</h2>
+      <h2 className='title-main'>Preferences</h2>
+
+    <div className='options'>
 
       {/* Educational Preferences */}
       <div className="preference-option">
@@ -51,19 +48,13 @@ const Preferences = () => {
 
       {/* Custom Preferences */}
       <div className="preference-option">
-        <label>Custom Preferences</label>
-        <button onClick={handleAddCustomPreference}>Add Custom Preference</button>
-        <input
-          type="text"
-          value={customPreferences}
-          onChange={(e) => setCustomPreferences(e.target.value)}
-        />
-        <ul>
-          {customList.map((item, index) => (
-            <li key={index}>{item}</li>
-          ))}
-        </ul>
-      </div>
+  <label>Custom Preferences</label>
+  <button className="custom-preference-button" >
+    +
+  </button>
+
+</div>
+    </div>
     </div>
   );
 };

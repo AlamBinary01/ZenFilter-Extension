@@ -75,9 +75,10 @@ const containerStyle = {
 };
 
 const pageTitleStyle = {
-  border: '3px solid #f79817',
+  borderBottom: '2px solid #f79817',
   padding: '8px',
-  color : '#fff'
+  color : '#fff',
+  borderRadius : '15px'
 };
 
 const inputContainerStyle = {
@@ -107,7 +108,7 @@ const buttonStyle = {
 
 const emptyBoxStyle = {
   border: '2px solid #f79817',
-  borderRadius: '4px',
+  borderRadius: '15px',
   width: '200%', // Adjust the width as needed
   minHeight: '400px', // Set a minimum height for the empty box
   margin: '20px 0',

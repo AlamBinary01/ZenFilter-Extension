@@ -40,4 +40,4 @@
     );
   }
 
-  render(<ForgotPasswordPopup/>, document.getElementById("react-target"));
+  render(<Popup/>, document.getElementById("react-target"));

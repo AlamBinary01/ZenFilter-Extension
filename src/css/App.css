@@ -232,6 +232,9 @@ body {
   }
 }
 
+.section-title{
+  color: #fff;
+}
 .section-white {
 	background: #000000;
 	height:700px ;
