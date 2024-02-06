@@ -1,7 +1,7 @@
 body {
   margin: 0;
   padding: 0;
-  background-color: #000000;
+  background-color: #fff;
   color: #f79817;
   font-family: 'Montserrat', sans-serif;
 }
@@ -124,6 +124,8 @@ body {
 }
 
 .main-title {
+  color: #F79817;
+  font-weight: 900;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -233,10 +235,11 @@ body {
 }
 
 .section-title{
-  color: #fff;
+  color: #F79817;
+  font-weight: 900;
 }
 .section-white {
-	background: #000000;
+	background: #fff;
 	height:700px ;
 	width: 1150px;
 	padding-left: 100px;

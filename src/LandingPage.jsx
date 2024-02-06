@@ -8,7 +8,7 @@ border-radius: 10px;
 border: solid 4px #f79817;
 align-items: center;
 justify-content: center;
-background-color: #000000;
+background-color: #fff;
 width: 678px;
 max-width: 100%;
 min-height: 400px;

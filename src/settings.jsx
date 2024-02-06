@@ -74,10 +74,11 @@ const containerStyle = {
 };
 
 const pageTitleStyle = {
-  borderBottom: '3px solid #f79817',
+  borderBottom: '3px solid #000000',
   borderRadius: '15px',
   padding: '8px',
-  color: '#fff'
+  color: '#F79817',
+  fontWeight : 'bold'
 };
 
 const userInfoContainerStyle = {

@@ -67,7 +67,8 @@ const containerStyle = {
 };
 
 const sectionTitleStyle = {
-  color: '#fff',
+  color: '#F79817',
+  fontWeight: 'bold',
   border: '4px solid #f79817',
   padding: '8px',
   width: '150%', // Remove or adjust this line

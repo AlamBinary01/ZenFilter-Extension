@@ -19,16 +19,38 @@ const BlockWebsitesPage = () => {
   };
 
   const handleAddUrl = () => {
-    if (enteredUrl.trim() !== '') {
-      if (isValidUrl(enteredUrl)) {
+    if (enteredUrl.trim() !== '' && isValidUrl(enteredUrl)) {
+      const email = window.localStorage.getItem("userEmail");
+      const token = window.localStorage.getItem("token"); // Assuming token is stored in localStorage
+  
+      // Use fetch to send the URL to your backend
+      fetch("http://localhost:5000/addBlockedUrl", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Include the token in your request
+        },
+        body: JSON.stringify({
+          email,
+          url: enteredUrl,
+        }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        // Successfully added URL to backend, now update UI
         setBlockedUrls((prevUrls) => [...prevUrls, enteredUrl]);
         setEnteredUrl('');
-        setUrlFormatError('');
-      } else {
-        setUrlFormatError('Invalid URL format. Please enter a valid URL.');
-      }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        setUrlFormatError('Could not save URL. Please try again.');
+      });
+    } else {
+      setUrlFormatError('Invalid URL format. Please enter a valid URL.');
     }
   };
+  
 
   const handleDeleteUrl = (index) => {
     setBlockedUrls((prevUrls) => prevUrls.filter((url, i) => i !== index));
@@ -75,9 +97,10 @@ const containerStyle = {
 };
 
 const pageTitleStyle = {
-  borderBottom: '2px solid #f79817',
+  borderBottom: '2px solid #000000',
   padding: '8px',
-  color : '#fff',
+  color : '#F79817',
+  fontWeight: 'bold',
   borderRadius : '15px'
 };
 
@@ -93,13 +116,13 @@ const inputStyle = {
   padding: '8px',
   marginRight: '10px',
   borderRadius: '4px',
-  border: '1px solid #ddd',
+  border: '1px solid #F79817',
 };
 
 const buttonStyle = {
   padding: '8px 12px',
   borderRadius: '4px',
-  background: 'black',
+  background: '#e67315',
   color: '#fff',
   cursor: 'zoom-in',
   border: '4px solid #f79817',
@@ -107,7 +130,7 @@ const buttonStyle = {
 };
 
 const emptyBoxStyle = {
-  border: '2px solid #f79817',
+  border: '4px solid #f79817',
   borderRadius: '15px',
   width: '200%', // Adjust the width as needed
   minHeight: '400px', // Set a minimum height for the empty box

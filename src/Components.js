@@ -1,7 +1,7 @@
 import styled, { keyframes } from 'styled-components';
 
 export const Container = styled.div`
-background-color: #000000;
+background-color: #fff;
 border: 4px solid #F79817;
 box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
 border-radius: 10px;
@@ -42,7 +42,7 @@ ${props => (props.signinIn !== true ? `transform: translateX(100%);` : null)}
 `;
 
 export const Form = styled.form`
-background-color: #000000;
+background-color: #fff;
 display: flex;
 align-items: center;
 justify-content: center;

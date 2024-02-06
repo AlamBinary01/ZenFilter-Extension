@@ -77,6 +77,10 @@ function App({onForgetPassword}) {
           }, 3000);
         } else if (data.status === "ok") {
           window.localStorage.setItem("token", data.data);
+          window.localStorage.setItem("userEmail", email);
+          chrome.storage.local.set({"token": data.data}, function() {
+            console.log("Token is saved in chrome storage.");
+          });
           chrome.tabs.create(
             { url: "./dashboard.html", active: true },
             function (newTab) {

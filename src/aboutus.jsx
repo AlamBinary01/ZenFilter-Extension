@@ -22,10 +22,10 @@ function Services () {
 
                   <div class="team-item">
                   
-                      <img src="https://demo.epic-webdesign.com/tf-pacifico/v1/images/team1a.jpg" class="team-img" alt="pic" />                   
+                      <img src="./images/haseeb.jpg" class="team-img" alt="pic" />                   
                       <h3>HASEEB MUSHTAQ</h3>            
                       <div class="team-info"><p>ML Expert</p></div>
-                      <p>Johnathan is our  co-founder and has developed search strategies for a variety of clients from international brands to medium sized businesses for over five years.</p>
+                      <p>Haseeb, an accomplished ML expert, excels in leveraging cutting-edge algorithms to unlock the true potential of machine learning for transformative solutions.</p>
                 
                 </div>
             </div> 
@@ -34,13 +34,13 @@ function Services () {
 
                   <div class="team-item">
                   
-                      <img src="https://demo.epic-webdesign.com/tf-pacifico/v1/images/team1a.jpg" class="team-img" alt="pic" />
+                      <img src="./images/subhan.jpg" class="team-img" alt="pic" height={140} width={150} />
                      
                       <h3>SUBHAN ATTIQUE</h3>
                       
                       <div class="team-info"><p>React js Developer</p></div>
 
-                      <p>Graduating with a degree in Spanish and English, Alexandra has always loved writing and now she’s lucky enough to do it as part of her new job inside our agency.</p>
+                      <p>Subhan, a skilled ReactJS developer, brings creativity and efficiency to every project, ensuring seamless user experiences through his mastery in front-end development.</p>
                                       
                   </div>
 
@@ -49,13 +49,13 @@ function Services () {
 
                   <div class="team-item">
                   
-                      <img src="https://demo.epic-webdesign.com/tf-pacifico/v1/images/team1a.jpg" class="team-img" alt="pic" />
+                      <img src="./images/mohsin.jpg" class="team-img" alt="pic" />
                      
                       <h3>MOHSIN SHAHID</h3>
                       
                       <div class="team-info"><p>Flutter Developer</p></div>
 
-                      <p>Elisa first fell in love with digital marketing at the university. He loves to learn, and looks forward to being part of this new exciting industry for many years.</p>
+                      <p>In the realm of Flutter development, Mohsin's ingenuity shines bright, translating ideas into fluid and feature-rich mobile experiences that captivate users in a positive manner</p>
                                         
                   </div>
 

@@ -31,6 +31,7 @@ const userSchema = new mongoose.Schema({
   name: String,
   email: String,
   password: String,
+  blockedUrls: [String],
 });
 
 const User = mongoose.model("UserInfo", userSchema);
@@ -206,3 +207,46 @@ app.post("/resetPassword/:id/:token", async(req,res) => {
   }
 
 })
+
+app.post("/addBlockedUrl", async (req, res) => {
+  const { email, url } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).send({ error: "User not found" });
+    }
+
+    // Avoid duplicate URLs
+    if (!user.blockedUrls.includes(url)) {
+      user.blockedUrls.push(url);
+      await user.save();
+    }
+
+    res.status(200).send({ status: "ok", data: "URL added to blocked list" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ status: "error", error: "Server error" });
+  }
+});
+
+app.post("/getBlockedUrls", async (req, res) => {
+  // Assuming you're passing the token in the request's Authorization header
+  const token = req.headers.authorization.split(" ")[1]; // Extract token from Bearer token format
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const userEmail = decoded.email;
+
+    const user = await User.findOne({ email: userEmail });
+    if (!user) {
+      return res.status(404).send({ status: "error", error: "User not found" });
+    }
+
+    // User found, return their blocked URLs
+    res.status(200).send({ status: "ok", blockedUrls: user.blockedUrls });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ status: "error", error: "Failed to retrieve blocked URLs" });
+  }
+});
