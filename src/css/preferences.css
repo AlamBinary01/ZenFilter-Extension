@@ -58,3 +58,89 @@
     margin: 5px;
   }
   
+
+  /* Modal Overlay */
+.modal {
+  position: fixed; /* Stay in place */
+  z-index: 10; /* Sit on top of everything */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  background-color: rgba(0, 0, 0, 0.4); /* Black background with opacity */
+  display: flex;
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
+}
+
+/* Modal Content */
+.modal-content {
+  background-color: #fff; /* White background */
+  margin: auto; /* Automatically margin according to the screen size */
+  padding: 20px; /* Padding inside the box */
+  border: 4px solid #f79817; /* Border color to match the scheme */
+  border-radius: 10px; /* Rounded corners */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Slight shadow for depth */
+  max-width: 500px; /* Maximum width */
+  width: 90%; /* Responsive width */
+}
+
+/* Style for the input field in the modal */
+.modal input[type="text"] {
+  width: calc(100% - 20px); /* Full width minus padding */
+  padding: 10px; /* Padding for the input */
+  margin-bottom: 20px; /* Margin at the bottom */
+  border-radius: 5px; /* Rounded corners */
+  border: 1px solid #ccc; /* Light grey border */
+}
+
+/* Style for buttons in the modal */
+.modal button {
+  background-color: #e67315; /* Button background to match the scheme */
+  color: #fff; /* White text color */
+  border: none; /* No border */
+  padding: 10px 20px; /* Padding inside the button */
+  margin-right: 10px; /* Margin to the right */
+  cursor: pointer; /* Pointer cursor on hover */
+  border-radius: 5px; /* Rounded corners */
+}
+
+/* Hover effect for buttons */
+.modal button:hover {
+  background-color: #f79817; /* Slightly lighter on hover */
+}
+
+/* Existing styles */
+
+/* Add new styles for the display box */
+.custom-preferences-display-box {
+  border: 3px solid #f79817; /* Matching border color */
+  margin-top: 20px; /* Space above the box */
+  margin-bottom: 20px;
+  padding: 10px; /* Padding inside the box */
+  max-height: 150px; /* Maximum height before scrolling */
+  overflow-y: auto; /* Allow vertical scrolling */
+  background-color: #fff; /* White background */
+  color: #333; /* Text color */
+}
+
+.custom-preference-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px; /* Space between items */
+}
+
+.delete-preference-button {
+  background-color: #ff0000; /* Red background */
+  color: #ffffff; /* White text */
+  border: none;
+  cursor: pointer;
+  padding: 5px 8px;
+  border-radius: 50%; /* Circular button */
+  margin-left: 10px; /* Space from the preference text */
+}
+
+.delete-preference-button:hover {
+  background-color: #cc0000; /* Darker red on hover */
+}
