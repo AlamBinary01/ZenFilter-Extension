@@ -32,6 +32,7 @@ const userSchema = new mongoose.Schema({
   email: String,
   password: String,
   blockedUrls: [String],
+  customPreferences: [String],
 });
 
 const User = mongoose.model("UserInfo", userSchema);
@@ -248,5 +249,48 @@ app.post("/getBlockedUrls", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).send({ status: "error", error: "Failed to retrieve blocked URLs" });
+  }
+});
+
+app.post("/addCustomPreference", async (req, res) => {
+  const { email, customPreference } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).send({ error: "User not found" });
+    }
+
+    // Avoid duplicate preferences
+    if (!user.customPreferences.includes(customPreference)) {
+      user.customPreferences.push(customPreference);
+      await user.save();
+    }
+
+    res.status(200).send({ status: "ok", message: "Custom preference added" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ status: "error", error: "Server error" });
+  }
+});
+
+// Fetch custom preferences
+app.post("/getCustomPreferences", async (req, res) => {
+  const token = req.headers.authorization.split(" ")[1]; // Extract token
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const userEmail = decoded.email;
+
+    const user = await User.findOne({ email: userEmail });
+    if (!user) {
+      return res.status(404).send({ status: "error", error: "User not found" });
+    }
+
+    // User found, return their custom preferences
+    res.status(200).send({ status: "ok", customPreferences: user.customPreferences });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ status: "error", error: "Failed to retrieve custom preferences" });
   }
 });

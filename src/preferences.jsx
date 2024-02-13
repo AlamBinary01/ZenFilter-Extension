@@ -11,8 +11,34 @@ const Preferences = () => {
 
   const handleAddCustomPreference = () => {
     if (inputValue.trim() !== '') {
-      setCustomList([...customList, inputValue]);
-      setInputValue(''); // Clear the input after adding
+      // Assuming you have stored the user's email and token in localStorage
+      const email = window.localStorage.getItem("userEmail");
+      const token = window.localStorage.getItem("token");
+  
+      fetch("http://localhost:5000/addCustomPreference", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Include the token in your request if your backend requires authentication
+        },
+        body: JSON.stringify({
+          email,
+          customPreference: inputValue,
+        }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        if (data.status === "ok") {
+          setCustomList([...customList, inputValue]); // Update UI only after successful backend update
+          setInputValue(''); // Clear the input after adding
+        } else {
+          console.error('Failed to add custom preference', data.error);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
     }
   };
 
