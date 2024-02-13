@@ -1,5 +1,5 @@
 // BlockWebsitesPage.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const BlockWebsitesPage = () => {
   const [enteredUrl, setEnteredUrl] = useState('');
@@ -17,6 +17,36 @@ const BlockWebsitesPage = () => {
     const urlPattern = /^https?:\/\/\S+/;
     return urlPattern.test(url);
   };
+
+  useEffect(() => {
+    const fetchBlockedUrls = () => {
+      const email = window.localStorage.getItem("userEmail");
+      const token = window.localStorage.getItem("token");
+      
+      fetch("http://localhost:5000/getBlockedUrls", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ email }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'ok') {
+          setBlockedUrls(data.blockedUrls);
+        } else {
+          // Handle error (user not found, server error, etc.)
+          console.error('Failed to fetch blocked URLs:', data.error);
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching blocked URLs:', error);
+      });
+    };
+
+    fetchBlockedUrls();
+  }, []);
 
   const handleAddUrl = () => {
     if (enteredUrl.trim() !== '' && isValidUrl(enteredUrl)) {
@@ -52,8 +82,35 @@ const BlockWebsitesPage = () => {
   };
   
 
-  const handleDeleteUrl = (index) => {
-    setBlockedUrls((prevUrls) => prevUrls.filter((url, i) => i !== index));
+  const handleDeleteUrl = (urlToDelete) => {
+    const email = window.localStorage.getItem("userEmail");
+    const token = window.localStorage.getItem("token");
+
+    fetch("http://localhost:5000/deleteBlockedUrl", { // Assuming you have a /deleteBlockedUrl endpoint
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        email,
+        url: urlToDelete,
+      }),
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.status === 'ok') {
+        // Remove URL from frontend state
+        setBlockedUrls((prevUrls) => prevUrls.filter((url) => url !== urlToDelete));
+      } else {
+        // Handle error
+        console.error('Failed to delete URL:', data.error);
+      }
+    })
+    .catch(error => {
+      console.error('Error deleting URL:', error);
+    });
+  
   };
 
   return (
@@ -76,7 +133,7 @@ const BlockWebsitesPage = () => {
         {blockedUrls.map((url, index) => (
           <div key={index} style={blockedUrlStyle}>
             <span>{url}</span>
-            <button onClick={() => handleDeleteUrl(index)} style={deleteButtonStyle}>
+            <button onClick={() => handleDeleteUrl(url)} style={deleteButtonStyle}>
               X
             </button>
           </div>

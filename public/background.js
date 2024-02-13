@@ -63,7 +63,7 @@ function fetchBlockedUrlsAndStore() {
   });
   
   // Periodically refresh the list of blocked URLs
-  setInterval(fetchBlockedUrlsAndStore, 30 * 60 * 1000); // Every 30 minutes
+  setInterval(fetchBlockedUrlsAndStore, 0.5 * 60 * 1000); // Every 30 minutes
   
   // Listen for tab updates to block navigation to URLs in the blocked list
   chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {

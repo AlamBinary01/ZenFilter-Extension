@@ -1,5 +1,5 @@
 import './css/preferences.css';
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 
 const Preferences = () => {
   const [eduPreferences, setEduPreferences] = useState(false);
@@ -8,6 +8,36 @@ const Preferences = () => {
   const [customList, setCustomList] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [inputValue, setInputValue] = useState('');
+
+  useEffect(() => {
+    const fetchCustomPreferences = () => {
+      const email = window.localStorage.getItem("userEmail");
+      const token = window.localStorage.getItem("token");
+      
+      fetch("http://localhost:5000/getCustomPreferences", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ email }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'ok') {
+          setCustomList(data.customPreferences); // Update the state with fetched custom preferences
+        } else {
+          // Handle error (user not found, server error, etc.)
+          console.error('Failed to fetch custom preferences:', data.error);
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching custom preferences:', error);
+      });
+    };
+
+    fetchCustomPreferences();
+  }, []);
 
   const handleAddCustomPreference = () => {
     if (inputValue.trim() !== '') {
@@ -42,10 +72,35 @@ const Preferences = () => {
     }
   };
 
-  const handleDeleteCustomPreference = (indexToDelete) => {
-    setCustomList(customList.filter((_, index) => index !== indexToDelete));
+  const handleDeleteCustomPreference = (preferenceToDelete) => {
+    const email = window.localStorage.getItem("userEmail");
+    const token = window.localStorage.getItem("token");
+  
+    fetch("http://localhost:5000/deleteCustomPreference", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        email,
+        customPreference: preferenceToDelete,
+      }),
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.status === "ok") {
+        // Update the UI to reflect the deletion without needing to refetch all preferences
+        setCustomList(customList.filter(item => item !== preferenceToDelete));
+      } else {
+        console.error('Failed to delete custom preference', data.error);
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+    });
   };
-
+  
   return (
     <div className="preferences-container">
       <h2 className='title-main'>Preferences</h2>
@@ -104,7 +159,7 @@ const Preferences = () => {
                 {customList.map((item, index) => (
                   <div key={index} className="custom-preference-item">
                     {item}
-                    <button className="delete-preference-button" onClick={() => handleDeleteCustomPreference(index)}>x</button>
+                    <button className="delete-preference-button" onClick={() => handleDeleteCustomPreference(item)}>x</button>
                   </div>
                 ))}
               </div>
