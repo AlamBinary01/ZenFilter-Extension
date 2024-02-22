@@ -9,6 +9,7 @@ module.exports = {
     popup: './src/popup.jsx',
     loginForm: './src/LoginForm.jsx',
     dashboard: './src/dashboard.jsx',
+    content: './public/content.js',
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
@@ -22,11 +23,13 @@ module.exports = {
       },
       {
         test: /\.(js|jsx)$/,
+        test: /\.(js|jsx|ts|tsx)$/,
         exclude: /node_modules/,
         use: {
           loader: 'babel-loader',
           options: {
             presets: ['@babel/preset-env', '@babel/preset-react'],
+            presets: ['@babel/preset-env', '@babel/preset-react', '@babel/preset-typescript'],
           },
         },
       },
@@ -44,7 +47,10 @@ module.exports = {
     chunks: ['dashboard'], 
   }),
     new CopyPlugin({
-      patterns: [{ from: "public" }],
+      patterns: [
+        { from: "public" },
+        { from: "dist/models", to: "models" }
+      ],
     }),
   ],
 };

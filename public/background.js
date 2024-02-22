@@ -56,15 +56,18 @@ function fetchBlockedUrlsAndStore() {
   // Listen for when the extension is installed or the browser starts up
   chrome.runtime.onInstalled.addListener(() => {
     fetchBlockedUrlsAndStore();
+    fetchCustomPreferencesAndStore();
   });
   
   chrome.runtime.onStartup.addListener(() => {
     fetchBlockedUrlsAndStore();
+    fetchCustomPreferencesAndStore();
   });
   
   // Periodically refresh the list of blocked URLs
   setInterval(fetchBlockedUrlsAndStore, 0.5 * 60 * 1000); // Every 30 minutes
-  
+  setInterval(fetchCustomPreferencesAndStore, 0.5 * 60 * 1000);
+
   // Listen for tab updates to block navigation to URLs in the blocked list
   chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     if (changeInfo.status === 'complete' && tab.url) {
