@@ -85,5 +85,11 @@ function fetchBlockedUrlsAndStore() {
     }
   });
 
+  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === "redirect" && sender.tab) {
+      chrome.tabs.update(sender.tab.id, {url: request.url});
+    }
+  });
+  
   
   

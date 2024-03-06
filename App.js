@@ -8,6 +8,8 @@
   const JWT_SECRET = "odwnfadsknkpdwngipwnvpwjiwon82748327fewiu34298332jpndvnndknd";
   const emailValidator = require("deep-email-validator");
   var nodemailer = require("nodemailer");
+  const fetch = require('node-fetch');
+
 
   app.set("view engine", "ejs");
   app.use(express.urlencoded({extended:false}));
@@ -340,37 +342,48 @@
 
 
 
-app.post('/fetchImage', async (req, res) => {
-  const { imageUrl } = req.body;
-  console.log('Fetching image URL:', imageUrl); // Debugging: Log the URL being fetched
-
-  // Ensure imageUrl is not undefined, null, or empty
-  if (!imageUrl || typeof imageUrl !== 'string') {
-    return res.status(400).send({ status: "error", error: "Invalid or missing imageUrl" });
-  }
-
-  try {
-    // Ensure you're using dynamic import for fetch if you're in a CommonJS module
-    if (!fetch) {
-      fetch = (await import('node-fetch')).default;
+  app.post('/fetchImage', async (req, res) => {
+    const { imageUrl } = req.body;
+    console.log('Fetching image URL:', imageUrl);
+  
+    if (!imageUrl || typeof imageUrl !== 'string') {
+      return res.status(400).send({ status: "error", error: "Invalid or missing imageUrl" });
     }
-
-    const response = await fetch(imageUrl);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch: ${response.statusText}`);
+  
+    try {
+      // Check if imageUrl is a data URL
+      if (imageUrl.startsWith('data:')) {
+        // Decode the data URL to a buffer
+        const base64Data = imageUrl.split(';base64,').pop();
+        const buffer = Buffer.from(base64Data, 'base64');
+  
+        // Assuming you want to send back the decoded image
+        res.writeHead(200, {
+          'Content-Type': 'image/png', // You might need to dynamically determine this based on the data URL
+          'Access-Control-Allow-Origin': '*',
+        });
+        res.end(buffer);
+      } else {
+        // It's an HTTP(S) URL, proceed with fetching
+        const response = await fetch(imageUrl);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch: ${response.statusText}`);
+        }
+        const buffer = await response.buffer();
+        const contentType = response.headers.get('Content-Type') || 'application/octet-stream';
+  
+        res.writeHead(200, {
+          'Content-Type': contentType,
+          'Access-Control-Allow-Origin': '*',
+        });
+        res.end(buffer);
+      }
+    } catch (error) {
+      console.error('Error fetching image:', error);
+      res.status(500).send({ status: "error", error: "Failed to fetch image" });
     }
-    const buffer = await response.buffer();
-    const contentType = response.headers.get('Content-Type') || 'application/octet-stream';
-
-    res.writeHead(200, {
-      'Content-Type': contentType,
-      'Access-Control-Allow-Origin': '*', // Allowing CORS
-    });
-    res.end(buffer);
-  } catch (error) {
-    console.error('Error fetching image:', error);
-    res.status(500).send({ status: "error", error: "Failed to fetch image" });
-  }
-});
+  });
+  
+  
 
   

@@ -45,18 +45,37 @@ export class NsfwSpy {
 
     // New method to load an image with CORS compliance and classify it
     async classifyImageUrl(imageUrl: string) {
-        const imageElement = await this.loadImageWithCORS(imageUrl);
-        return this.classifyImage(imageElement);
+    // Change the URL to your server's fetchImage endpoint
+    const proxyUrl = `http://localhost:5000/fetchImage`;
+    const response = await fetch(proxyUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ imageUrl }),
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to fetch image through proxy');
     }
 
+    const blob = await response.blob();
+    const imageElement = await this.createImageElementFromBlob(blob);
+    return this.classifyImage(imageElement);
+}
+
     // Helper method to load an image with CORS settings
-    private async loadImageWithCORS(imageUrl: string): Promise<HTMLImageElement> {
+    async createImageElementFromBlob(blob: Blob): Promise<HTMLImageElement> {
         return new Promise((resolve, reject) => {
             const img = new Image();
             img.crossOrigin = "anonymous"; // Set CORS policy
-            img.onload = () => resolve(img);
-            img.onerror = reject;
-            img.src = imageUrl;
+            const url = URL.createObjectURL(blob);
+            img.onload = () => {
+                URL.revokeObjectURL(url);
+                resolve(img); // TypeScript now knows this resolves to HTMLImageElement
+            };
+            img.onerror = (e) => reject(e);
+            img.src = url;
         });
     }
 }
