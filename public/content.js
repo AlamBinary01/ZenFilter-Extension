@@ -24,7 +24,7 @@ async function classifyAndProcessImages() {
         const result = await nsfwSpy.classifyImageUrl(imageUrl);
         // If the image is classified as safe, remove the blur
         if (result.predictedLabel !== 'pornography' && result.predictedLabel !== 'sexy' && result.predictedLabel !== 'hentai') {
-          img.style.filter = ''; // Remove blur
+          classifyViolenceInImage(img); // Remove blur
         }
       } catch (error) {
         console.error('Error classifying image:', error);
@@ -33,6 +33,55 @@ async function classifyAndProcessImages() {
     }
   });
 }
+
+async function classifyViolenceInImage(imgElement) {
+  const imageUrl = imgElement.src || imgElement.getAttribute('data-src');
+  const response = await fetch(imageUrl);
+  const blob = await response.blob();
+
+  const formData = new FormData();
+  formData.append('file', blob);
+
+  try {
+      const result = await fetch('http://127.0.0.1:5000/predict', {
+          method: 'POST',
+          body: formData,
+      });
+      const prediction = await result.json();
+
+      console.log(prediction);
+
+      const nonViolentLabels = [
+          'people walking on a street',
+          'buildings',
+          'road',
+          'cars on a road',
+          'car parking area',
+          'cars',
+          'office environment',
+          'office corridor',
+          'people talking',
+          'people walking in office',
+          'person walking in office',
+          'group of people'
+      ];
+
+      if (nonViolentLabels.includes(prediction.label) && prediction.confidence >= 0.23 || prediction.label === 'Unknown') {
+          imgElement.style.filter = ''; // Remove blur for non-violent content with high enough confidence
+      } else if (prediction.confidence < 0.23) {
+          // Optionally, apply a different style or handle 'Unknown' labels differently
+          imgElement.style.filter = 'blur(10px)'; // Maintain or apply blur for 'Unknown' or low-confidence predictions
+      } else {
+          // For violent labels or any labels not included in the nonViolentLabels list, maintain the blur
+          imgElement.style.filter = 'blur(10px)';
+      }
+  } catch (error) {
+      console.error('Error classifying image for violence:', error);
+      // Handling for communication or processing errors; might choose to unblur or keep blurred based on your policy
+  }
+}
+
+
 
 async function processVideoFrames() {
   const videos = document.querySelectorAll('video:not(.processed)');

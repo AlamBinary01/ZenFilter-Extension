@@ -1,19 +1,7 @@
-// BlockedAppsPage.jsx
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
-const data = [
-  { app: 'Web 1', usageTime: 120 },
-  { app: 'Web 2', usageTime: 200 },
-  { app: 'Web 3', usageTime: 60 },
-  { app: 'Web 4', usageTime: 90 },
-  { app: 'Web 5', usageTime: 140 },
-  { app: 'Web 6', usageTime: 170 },
-  { app: 'Web 7', usageTime: 20 },
-  { app: 'Web 8', usageTime: 45 },
-  // Add more data as needed
-];
-
+// Define the blockedWebsitesData array here if it's static
 const blockedWebsitesData = [
   { url: 'http://example.com', reason: 'Inappropriate content' },
   { url: 'http://dummy-site.com', reason: 'Inappropriate content' },
@@ -22,16 +10,40 @@ const blockedWebsitesData = [
 ];
 
 const BlockedAppsPage = () => {
+  // State for dynamic data of past 7 days' web history
+  const [webHistoryData, setWebHistoryData] = useState([]);
+
+  useEffect(() => {
+    // Fetch the topSites data from chrome.storage.local
+    const fetchWebHistory = () => {
+      chrome.storage.local.get(["topSites"], function(result) {
+        if (result.topSites) {
+          // Transform the data to fit the chart
+          const transformedData = result.topSites.map(site => ({
+            app: site.url.replace('www.', ''), // Assuming you want to display hostname as 'app'
+            visits: site.visits // Assuming 'visits' can represent 'visits'
+          }));
+          setWebHistoryData(transformedData);
+        }
+      });
+    };
+
+    fetchWebHistory();
+  }, []);
+
+  // Your existing component structure follows here
+
   return (
     <div style={containerStyle}>
       <h2 style={sectionTitleStyle}>Most used websites</h2>
-      <ResponsiveContainer width="150%" height={300}>
-        <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+      <ResponsiveContainer width="100%" height={300}>
+        {/* Use dynamic webHistoryData for the BarChart */}
+        <BarChart data={webHistoryData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
           <XAxis dataKey="app" />
           <YAxis />
           <Tooltip />
           <Legend />
-          <Bar dataKey="usageTime" fill="#8884d8" />
+          <Bar dataKey="visits" fill="#8884d8" />
         </BarChart>
       </ResponsiveContainer>
 
@@ -55,6 +67,8 @@ const BlockedAppsPage = () => {
     </div>
   );
 };
+
+// Your existing styles remain unchanged
 
 const containerStyle = {
   display: 'flex',

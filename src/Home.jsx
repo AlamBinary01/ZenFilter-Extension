@@ -1,72 +1,45 @@
-import React from 'react'
-// import { Navigate, useNavigate} from "react-router-dom"
-import 
-{ BsFillArchiveFill, BsFillGrid3X3GapFill, BsPeopleFill, BsFillBellFill}
- from 'react-icons/bs'
- import 
- { BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } 
- from 'recharts';
+import React, { useEffect, useState } from 'react';
+import { BsFillArchiveFill, BsFillGrid3X3GapFill, BsPeopleFill, BsFillBellFill } from 'react-icons/bs';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 
 function Home() {
-    // const naviagate = useNavigate();
-    const data = [
-        {
-          name: 'Page A',
-          uv: 4000,
-          pv: 2400,
-          amt: 2400,
-        },
-        {
-          name: 'Page B',
-          uv: 3000,
-          pv: 1398,
-          amt: 2210,
-        },
-        {
-          name: 'Page C',
-          uv: 2000,
-          pv: 9800,
-          amt: 2290,
-        },
-        {
-          name: 'Page D',
-          uv: 2780,
-          pv: 3908,
-          amt: 2000,
-        },
-        {
-          name: 'Page E',
-          uv: 1890,
-          pv: 4800,
-          amt: 2181,
-        },
-        {
-          name: 'Page F',
-          uv: 2390,
-          pv: 3800,
-          amt: 2500,
-        },
-        {
-          name: 'Page G',
-          uv: 3490,
-          pv: 4300,
-          amt: 2100,
-        },
-      ];
-     
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    // Function to fetch top sites data from chrome storage
+    const fetchTopSites = () => {
+      chrome.storage.local.get(["topSites"], function(result) {
+        if (result.topSites) {
+          const formattedData = result.topSites.map(site => ({
+            // Directly use the site.url (hostname) without needing to parse it as a URL
+            name: site.url.replace('www.', ''), // Remove 'www.' if present
+            visits: site.visits
+          }));
+          setData(formattedData);
+        }
+      });
+    };
+
+    fetchTopSites();
+
+    // Optionally, set an interval to periodically refresh the data
+    const intervalId = setInterval(fetchTopSites, 60 * 60 * 1000); // Refresh every hour
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(intervalId);
+  }, []);
 
   return (
     <main className='main-container'>
-        <div className='main-title'>
-            <h2>DASHBOARD</h2>
-        </div>
+      <div className='main-title'>
+          <h2>DASHBOARD</h2>
+      </div>
 
-        <div className='main-cards'>
+      <div className='main-cards'>
             <div className='card'>
                 <div className='card-inner'>
                     <h4>Preferences</h4>
                     <BsFillArchiveFill className='card_icon'/>
-                    {/* <button onClick={()=>naviagate("/app")}>PREFERENCES</button> */}
                 </div>
                 <h3>300</h3>
             </div>
@@ -93,54 +66,47 @@ function Home() {
             </div>
         </div>
 
-        <div className='charts'>
-            <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-            width={500}
-            height={300}
+      <div className='charts' style={{ paddingTop: '20px' }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart
             data={data}
             margin={{
-                top: 5,
-                right: 30,
-                left: 20,
-                bottom: 5,
+              top: 20,
+              right: 30,
+              left: 20,
+              bottom: 5,
             }}
-            >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="pv" fill="#8884d8" />
-                <Bar dataKey="uv" fill="#82ca9d" />
-                </BarChart>
-            </ResponsiveContainer>
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="name" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Bar dataKey="visits" fill="#8884d8" />
+          </BarChart>
+        </ResponsiveContainer>
 
-            <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                width={500}
-                height={300}
-                data={data}
-                margin={{
-                    top: 5,
-                    right: 30,
-                    left: 20,
-                    bottom: 5,
-                }}
-                >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Line type="monotone" dataKey="pv" stroke="#8884d8" activeDot={{ r: 8 }} />
-                <Line type="monotone" dataKey="uv" stroke="#82ca9d" />
-                </LineChart>
-            </ResponsiveContainer>
-
-        </div>
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart
+            data={data}
+            margin={{
+              top: 20,
+              right: 30,
+              left: 20,
+              bottom: 5,
+            }}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="name" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Line type="monotone" dataKey="visits" stroke="#82ca9d" activeDot={{ r: 8 }} />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
     </main>
-  )
+  );
 }
 
 export default Home;

@@ -50,6 +50,37 @@ function fetchBlockedUrlsAndStore() {
     });
   }
   
+  function fetchBrowserHistory() {
+    const oneWeekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000); // Calculate timestamp for one week ago
+    chrome.history.search({ text: '', startTime: oneWeekAgo, maxResults: 1000 }, function(data) {
+        const siteVisitCount = {};
+
+        data.forEach(page => {
+            try {
+                const urlObj = new URL(page.url); // This might throw an error if the URL is invalid
+                const hostname = urlObj.hostname; // Use hostname for grouping visits by domain
+
+                if (siteVisitCount[hostname]) {
+                    siteVisitCount[hostname]++;
+                } else {
+                    siteVisitCount[hostname] = 1;
+                }
+            } catch (error) {
+                // If an error occurs, log it and skip this URL
+                console.error('Error processing URL:', page.url, error);
+            }
+        });
+
+        const sortedSites = Object.keys(siteVisitCount).sort((a, b) => siteVisitCount[b] - siteVisitCount[a]).slice(0, 7);
+        const topSites = sortedSites.map(site => ({ url: site, visits: siteVisitCount[site] }));
+
+        chrome.storage.local.set({ "topSites": topSites });
+    });
+}
+
+
+  
+
   // Ensure you call this function appropriately like you do for fetchBlockedUrlsAndStore
   
   
@@ -57,16 +88,20 @@ function fetchBlockedUrlsAndStore() {
   chrome.runtime.onInstalled.addListener(() => {
     fetchBlockedUrlsAndStore();
     fetchCustomPreferencesAndStore();
+    fetchBrowserHistory();
   });
   
   chrome.runtime.onStartup.addListener(() => {
     fetchBlockedUrlsAndStore();
     fetchCustomPreferencesAndStore();
+    fetchBrowserHistory();
   });
   
   // Periodically refresh the list of blocked URLs
   setInterval(fetchBlockedUrlsAndStore, 0.5 * 60 * 1000); // Every 30 minutes
   setInterval(fetchCustomPreferencesAndStore, 0.5 * 60 * 1000);
+  setInterval(fetchBrowserHistory, 1 * 60 * 1000); // Every hour
+
 
   // Listen for tab updates to block navigation to URLs in the blocked list
   chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
