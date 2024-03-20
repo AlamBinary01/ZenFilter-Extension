@@ -3,169 +3,109 @@ import { NsfwSpy } from './nsfw.ts';
 const nsfwSpy = new NsfwSpy(chrome.runtime.getURL('./models/model.json'));
 
 async function classifyAndProcessImages() {
-  // Ensure the model is loaded
-  await nsfwSpy.load();
+    await nsfwSpy.load();
 
-  // Get all images that haven't been processed yet
-  const images = Array.from(document.getElementsByTagName('img'));
-  const unprocessedImages = images.filter(img => !img.classList.contains('processed'));
+    const images = document.querySelectorAll('img:not(.processed)');
+    images.forEach(img => {
+        img.classList.add('processed');
+        classifyImage(img);
+    });
+}
 
-  // Immediately blur all unprocessed images
-  unprocessedImages.forEach(img => {
-    img.style.filter = 'blur(10px)'; // Apply blur
-    img.classList.add('processed'); // Mark as processed to avoid re-blurring
-  });
+async function classifyImage(img) {
+    const imageUrl = img.src || img.dataset.src;
+    if (!imageUrl) return;
 
-  // Asynchronously classify and potentially unblur images
-  unprocessedImages.forEach(async (img) => {
-    const imageUrl = img.src || img.getAttribute('data-src');
-    if (imageUrl) {
-      try {
+    try {
         const result = await nsfwSpy.classifyImageUrl(imageUrl);
-        // If the image is classified as safe, remove the blur
-        if (result.predictedLabel !== 'pornography' && result.predictedLabel !== 'sexy' && result.predictedLabel !== 'hentai') {
-          classifyViolenceInImage(img); // Remove blur
+        if (!['pornography', 'sexy', 'hentai'].includes(result.predictedLabel)) {
+            classifyViolenceInImage(img);
+        } else {
+            img.style.filter = 'blur(10px)';
         }
-      } catch (error) {
+    } catch (error) {
         console.error('Error classifying image:', error);
-        // Optionally, decide whether to unblur on error based on your use case
-      }
     }
-  });
 }
 
 async function classifyViolenceInImage(imgElement) {
-  const imageUrl = imgElement.src || imgElement.getAttribute('data-src');
-  const response = await fetch(imageUrl);
-  const blob = await response.blob();
+    const imageUrl = imgElement.src || imgElement.getAttribute('data-src');
+    const response = await fetch('http://localhost:5000/fetchImage', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ imageUrl }),
+    });
+    
+    if (!response.ok) throw new Error('Failed to fetch image through proxy');
+    
+    const blob = await response.blob();
+    const formData = new FormData();
+    formData.append('file', blob);
+    
+    try {
+        const result = await fetch('http://127.0.0.1:5000/predict', { method: 'POST', body: formData });
+        const prediction = await result.json();
+        console.log(prediction);
 
-  const formData = new FormData();
-  formData.append('file', blob);
-
-  try {
-      const result = await fetch('http://127.0.0.1:5000/predict', {
-          method: 'POST',
-          body: formData,
-      });
-      const prediction = await result.json();
-
-      console.log(prediction);
-
-      const nonViolentLabels = [
-          'people walking on a street',
-          'buildings',
-          'road',
-          'cars on a road',
-          'car parking area',
-          'cars',
-          'office environment',
-          'office corridor',
-          'people talking',
-          'people walking in office',
-          'person walking in office',
-          'group of people'
-      ];
-
-      if (nonViolentLabels.includes(prediction.label) && prediction.confidence >= 0.23 || prediction.label === 'Unknown') {
-          imgElement.style.filter = ''; // Remove blur for non-violent content with high enough confidence
-      } else if (prediction.confidence < 0.23) {
-          // Optionally, apply a different style or handle 'Unknown' labels differently
-          imgElement.style.filter = 'blur(10px)'; // Maintain or apply blur for 'Unknown' or low-confidence predictions
-      } else {
-          // For violent labels or any labels not included in the nonViolentLabels list, maintain the blur
-          imgElement.style.filter = 'blur(10px)';
-      }
-  } catch (error) {
-      console.error('Error classifying image for violence:', error);
-      // Handling for communication or processing errors; might choose to unblur or keep blurred based on your policy
-  }
-}
-
-
-
-async function processVideoFrames() {
-  const videos = document.querySelectorAll('video:not(.processed)');
-  videos.forEach(video => {
-    video.classList.add('processed'); // Mark the video as processed to avoid setting multiple intervals on the same video
-    let explicitContentCount = 0; // Reset count for each video
-
-    const intervalId = setInterval(async () => {
-      if (video.paused || video.ended) {
-        clearInterval(intervalId); // Stop the interval if the video is not playing
-        explicitContentCount = 0; // Reset count if video ends or is paused
-        return;
-      }
-
-      const frame = captureFrame(video);
-      const classificationResult = await nsfwSpy.classifyImage(frame);
-      
-      // Handle classification result
-      const explicitContentDetected = ['pornography', 'hentai', 'sexy'].includes(classificationResult.predictedLabel);
-      if (explicitContentDetected) {
-        explicitContentCount++;
-        
-        // Display an alert and log to the console if explicit content is detected
-        if(explicitContentCount === 1){ // Alert once when the first explicit frame is detected
-            alert("You are watching explicit content");
-            console.log("Explicit frame detected");
+        if (['fight on a street', 'fire on a street', 'street violence', 'car crash', 'violence in office', 'fire in office'].includes(prediction.label)) {
+            imgElement.style.filter = 'blur(10px)';
+        } else {
+            imgElement.style.filter = '';
         }
-      } else {
-        explicitContentCount = Math.max(0, explicitContentCount - 1); // Optionally decrease count on consecutive non-explicit frames
-      }
-
-      // Redirect if explicit content detected more than 3 times
-      if (explicitContentCount >= 3) {
-        clearInterval(intervalId); // Stop checking this video
-        redirectToDashboard(); // Implement this function to handle redirection
-      }
-    }, 3000); // Check every 3 seconds
-  });
-}
-
-
-
-function captureFrame(video) {
-  const canvas = document.createElement('canvas');
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-  const ctx = canvas.getContext('2d');
-  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-  return canvas;
-}
-
-const videoClassificationCounts = new Map();
-
-function handleVideoClassificationResult(result, video) {
-  const explicitContentDetected = ['pornography', 'hentai', 'sexy'].includes(result.predictedLabel);
-  const count = videoClassificationCounts.get(video) || 0;
-  
-  if (explicitContentDetected) {
-    if (count >= 2) { // If this is the third (or more) detection
-      chrome.tabs.update(tabId, {url: "./dashboard.html"});
+    } catch (error) {
+        console.error('Error classifying image for violence:', error);
     }
-    videoClassificationCounts.set(video, count + 1);
-  }
+}
+
+async function monitorVideos() {
+    document.querySelectorAll('video:not(.processed)').forEach(video => {
+        video.classList.add('processed');
+        processVideoFrames(video);
+    });
+}
+
+async function processVideoFrames(video) {
+    if (video.paused || video.ended) return;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    console.log('Video frame captured');
+
+    const blob = await new Promise(resolve => canvas.toBlob(resolve));
+    const formData = new FormData();
+    formData.append('file', blob);
+
+    try {
+        const result = await fetch('http://127.0.0.1:5000/predict', { method: 'POST', body: formData });
+        const prediction = await result.json();
+        
+        if (['pornography', 'sexy', 'hentai', 'fight on a street', 'fire on a street', 'street violence', 'car crash', 'violence in office', 'fire in office'].includes(prediction.label)) {
+            alert("You're watching sensitive content");
+            redirectToDashboard();
+            return;
+        }
+    } catch (error) {
+        console.error('Error processing video frame:', error);
+    }
+    requestAnimationFrame(() => processVideoFrames(video));
 }
 
 function redirectToDashboard() {
-  // Redirect after sending the request
-  chrome.runtime.sendMessage({action: "redirect", url: "./dashboard.html"});
+    chrome.runtime.sendMessage({action: "redirect", url: "./dashboard.html"});
 }
 
- 
-const observer = new MutationObserver((mutations) => {
-  mutations.forEach((mutation) => {
-    if (mutation.addedNodes.length > 0) {
-      classifyAndProcessImages();
-      processVideoFrames();
-    }
-  });
+function init() {
+    classifyAndProcessImages();
+    monitorVideos();
+}
+
+const observer = new MutationObserver(() => {
+    init();
 });
 
-// Start observing the document body for added nodes
 observer.observe(document.body, { childList: true, subtree: true });
 
-// Initial classification
-classifyAndProcessImages();
-processVideoFrames(); // Newly added function for videos
-
+init();
