@@ -35,18 +35,16 @@ async function classifyViolenceInImage(imgElement) {
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ imageUrl }),
     });
-    
+
     if (!response.ok) throw new Error('Failed to fetch image through proxy');
-    
+
     const blob = await response.blob();
     const formData = new FormData();
     formData.append('file', blob);
-    
+
     try {
         const result = await fetch('http://127.0.0.1:5000/predict', { method: 'POST', body: formData });
         const prediction = await result.json();
-        console.log(prediction);
-
         if (['fight on a street', 'fire on a street', 'street violence', 'car crash', 'violence in office', 'fire in office'].includes(prediction.label)) {
             imgElement.style.filter = 'blur(10px)';
         } else {
@@ -65,32 +63,41 @@ async function monitorVideos() {
 }
 
 async function processVideoFrames(video) {
-    if (video.paused || video.ended) return;
+    // Mark the video as processed to avoid setting multiple intervals
+    video.classList.add('processed');
 
-    const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    console.log('Video frame captured');
-
-    const blob = await new Promise(resolve => canvas.toBlob(resolve));
-    const formData = new FormData();
-    formData.append('file', blob);
-
-    try {
-        const result = await fetch('http://127.0.0.1:5000/predict', { method: 'POST', body: formData });
-        const prediction = await result.json();
-        
-        if (['pornography', 'sexy', 'hentai', 'fight on a street', 'fire on a street', 'street violence', 'car crash', 'violence in office', 'fire in office'].includes(prediction.label)) {
-            alert("You're watching sensitive content");
-            redirectToDashboard();
+    const intervalId = setInterval(async () => {
+        if (video.paused || video.ended) {
+            clearInterval(intervalId); // Stop the interval if the video is not playing
             return;
         }
-    } catch (error) {
-        console.error('Error processing video frame:', error);
-    }
-    requestAnimationFrame(() => processVideoFrames(video));
+
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        console.log('Video frame captured');
+
+        const blob = await new Promise(resolve => canvas.toBlob(resolve));
+        const formData = new FormData();
+        formData.append('file', blob);
+
+        try {
+            const explicitResult = await nsfwSpy.classifyImage(canvas);
+            const violenceResult = await fetch('http://127.0.0.1:5000/predict', { method: 'POST', body: formData });
+            const prediction = await violenceResult.json();
+
+            if (['pornography', 'sexy', 'hentai'].includes(explicitResult.predictedLabel) || ['fight on a street', 'fire on a street', 'street violence', 'car crash', 'violence in office', 'fire in office'].includes(prediction.label)) {
+                alert("You're watching sensitive content");
+                redirectToDashboard();
+                clearInterval(intervalId); // Stop checking this video
+                return;
+            }
+        } catch (error) {
+            console.error('Error processing video frame:', error);
+        }
+    }, 1000); // Check every 1 second
 }
 
 function redirectToDashboard() {
