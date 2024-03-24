@@ -2,57 +2,70 @@ import { NsfwSpy } from './nsfw.ts';
 
 const nsfwSpy = new NsfwSpy(chrome.runtime.getURL('./models/model.json'));
 
-async function classifyAndProcessImages() {
+async function init() {
     await nsfwSpy.load();
+    observeImages();
+    monitorVideos();
+    observeDOMChanges();
+}
 
-    const images = document.querySelectorAll('img:not(.processed)');
-    images.forEach(img => {
-        img.classList.add('processed');
-        classifyImage(img);
+function observeImages() {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const img = entry.target;
+                classifyImage(img);
+                observer.unobserve(img);
+            }
+        });
+    }, { rootMargin: '50px 0px', threshold: 0.01 });
+
+    document.querySelectorAll('img:not(.processed)').forEach(img => {
+        observer.observe(img);
     });
 }
 
 async function classifyImage(img) {
     const imageUrl = img.src || img.dataset.src;
+    img.classList.add('processed');
+
     if (!imageUrl) return;
 
     try {
-        const result = await nsfwSpy.classifyImageUrl(imageUrl);
-        if (!['pornography', 'sexy', 'hentai'].includes(result.predictedLabel)) {
-            classifyViolenceInImage(img);
-        } else {
-            img.style.filter = 'blur(10px)';
+        const explicitResultPromise = nsfwSpy.classifyImageUrl(imageUrl);
+        const violenceResultPromise = fetchViolenceClassification(imageUrl);
+
+        const [explicitResult, violenceResult] = await Promise.all([explicitResultPromise, violenceResultPromise]);
+
+        if (shouldBlur(explicitResult, violenceResult)) {
+            applyBlur(img);
         }
     } catch (error) {
         console.error('Error classifying image:', error);
     }
 }
 
-async function classifyViolenceInImage(imgElement) {
-    const imageUrl = imgElement.src || imgElement.getAttribute('data-src');
+async function fetchViolenceClassification(imageUrl) {
     const response = await fetch('http://localhost:5000/fetchImage', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ imageUrl }),
     });
-
     if (!response.ok) throw new Error('Failed to fetch image through proxy');
-
     const blob = await response.blob();
     const formData = new FormData();
     formData.append('file', blob);
+    const result = await fetch('http://127.0.0.1:5000/predict', { method: 'POST', body: formData });
+    return result.json();
+}
 
-    try {
-        const result = await fetch('http://127.0.0.1:5000/predict', { method: 'POST', body: formData });
-        const prediction = await result.json();
-        if (['fight on a street', 'fire on a street', 'street violence', 'car crash', 'violence in office', 'fire in office'].includes(prediction.label)) {
-            imgElement.style.filter = 'blur(10px)';
-        } else {
-            imgElement.style.filter = '';
-        }
-    } catch (error) {
-        console.error('Error classifying image for violence:', error);
-    }
+function shouldBlur(explicitResult, violenceResult) {
+    return ['pornography', 'sexy', 'hentai'].includes(explicitResult.predictedLabel) ||
+           ['fight on a street', 'fire on a street', 'street violence', 'car crash', 'violence in office', 'fire in office'].includes(violenceResult.label);
+}
+
+function applyBlur(img) {
+    img.style.filter = 'blur(10px)';
 }
 
 async function monitorVideos() {
@@ -63,21 +76,15 @@ async function monitorVideos() {
 }
 
 async function processVideoFrames(video) {
-    // Mark the video as processed to avoid setting multiple intervals
-    video.classList.add('processed');
-
-    const intervalId = setInterval(async () => {
-        if (video.paused || video.ended) {
-            clearInterval(intervalId); // Stop the interval if the video is not playing
-            return;
-        }
-
+    let intervalId;
+    const processFrame = throttle(async () => {
         const canvas = document.createElement('canvas');
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        console.log('Video frame captured');
+
+ 	  console.log("Video Frame Captured");
 
         const blob = await new Promise(resolve => canvas.toBlob(resolve));
         const formData = new FormData();
@@ -85,34 +92,148 @@ async function processVideoFrames(video) {
 
         try {
             const explicitResult = await nsfwSpy.classifyImage(canvas);
-            const violenceResult = await fetch('http://127.0.0.1:5000/predict', { method: 'POST', body: formData });
-            const prediction = await violenceResult.json();
+            const violenceResult = await fetch('http://127.0.0.1:5000/predict', { method: 'POST', body: formData }).then(response => response.json());
 
-            if (['pornography', 'sexy', 'hentai'].includes(explicitResult.predictedLabel) || ['fight on a street', 'fire on a street', 'street violence', 'car crash', 'violence in office', 'fire in office'].includes(prediction.label)) {
-                alert("You're watching sensitive content");
+            if (['pornography', 'sexy', 'hentai'].includes(explicitResult.predictedLabel) || ['fight on a street', 'fire on a street', 'street violence', 'car crash', 'violence in office', 'fire in office'].includes(violenceResult.label)) {
+                showNotification("You're watching sensitive content");
+                clearInterval(intervalId);
                 redirectToDashboard();
-                clearInterval(intervalId); // Stop checking this video
                 return;
             }
         } catch (error) {
             console.error('Error processing video frame:', error);
         }
-    }, 1000); // Check every 1 second
+    }, 1000);
+
+    video.addEventListener('play', () => {
+        const interval = setInterval(() => {
+            if (video.paused || video.ended) clearInterval(interval);
+            else processFrame();
+        }, 1000);
+    });
 }
 
-function redirectToDashboard() {
-    chrome.runtime.sendMessage({action: "redirect", url: "./dashboard.html"});
+function observeDOMChanges() {
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            mutation.addedNodes.forEach((node) => {
+                if (node.nodeName === 'IMG' && !node.classList.contains('processed')) {
+                    classifyImage(node);
+                }
+            });
+        });
+    });
+
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+    });
 }
 
-function init() {
-    classifyAndProcessImages();
-    monitorVideos();
+async function redirectToDashboard() {
+    const currentUrl = window.location.origin;
+
+    // Use a Promise to wait for the email value
+    const email = await new Promise((resolve, reject) => {
+        chrome.storage.local.get(["userEmail"], (result) => {
+            if (chrome.runtime.lastError) {
+                reject(new Error(chrome.runtime.lastError));
+            } else {
+                resolve(result.userEmail);
+            }
+        });
+    });
+
+    // Now get the token the same way, for consistency and to handle possible errors
+    const token = await new Promise((resolve, reject) => {
+        chrome.storage.local.get(["token"], (result) => {
+            if (chrome.runtime.lastError) {
+                reject(new Error(chrome.runtime.lastError));
+            } else {
+                resolve(result.token);
+            }
+        });
+    });
+
+    // Proceed if token is available
+    if (token) {
+        try {
+            const response = await fetch("http://localhost:5000/addBlockedUrl", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                },
+                body: JSON.stringify({ email, url: currentUrl }),
+            });
+
+            // Handle response...
+            // For example, check if response was successful and then redirect
+            if (response.ok) {
+                // Assuming you want to redirect on successful addition
+                console.log("Hahahahahaahahahahaahahah")
+                // window.location.href = "https://zenfilter.netlify.app";
+            } else {
+                console.error('Failed to add blocked site: ', await response.text());
+            }
+        } catch (error) {
+            console.error('Failed to add blocked site:', error);
+        }
+    } else {
+        console.log("Token not found in storage.");
+    }
 }
 
-const observer = new MutationObserver(() => {
-    init();
-});
+  
 
-observer.observe(document.body, { childList: true, subtree: true });
+function showNotification(message) {
+    // Check if a notification already exists, if so, remove it
+    const existingNotification = document.getElementById('customNotification');
+    if (existingNotification) {
+        existingNotification.remove();
+    }
+
+    // Create the notification element
+    const notification = document.createElement('div');
+    notification.id = 'customNotification';
+    notification.textContent = message;
+    notification.style.position = 'fixed';
+    notification.style.top = '50%';
+    notification.style.left = '50%';
+    notification.style.transform = 'translate(-50%, -50%)';
+    notification.style.backgroundColor = 'black';
+    notification.style.color = 'red';
+    notification.style.padding = '20px 40px';
+    notification.style.borderRadius = '20px';
+    notification.style.zIndex = '10000';
+    notification.style.fontSize = '24px';
+    notification.style.fontWeight = 'bold';
+    notification.style.fontFamily = 'Montserrat, sans-serif';
+    notification.style.textAlign = 'center';
+    notification.style.maxWidth = '80%';
+    notification.style.boxShadow = '0 4px 6px rgba(0,0,0,0.2)';
+
+    // Append the notification to the body
+    document.body.appendChild(notification);
+
+    // Automatically remove the notification after 5 seconds
+    setTimeout(() => {
+        notification.remove();
+    }, 5000);
+}
+
+
+function throttle(callback, limit) {
+    let waiting = false;
+    return function () {
+        if (!waiting) {
+            callback.apply(this, arguments);
+            waiting = true;
+            setTimeout(() => {
+                waiting = false;
+            }, limit);
+        }
+    };
+}
 
 init();

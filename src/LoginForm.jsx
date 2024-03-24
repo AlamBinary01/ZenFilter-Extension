@@ -81,6 +81,7 @@ function App({onForgetPassword}) {
           chrome.storage.local.set({"token": data.data}, function() {
             console.log("Token is saved in chrome storage.");
           });
+          chrome.storage.local.set({"userEmail":email});
           chrome.tabs.create(
             { url: "./dashboard.html", active: true },
             function (newTab) {

@@ -14,7 +14,12 @@
   app.set("view engine", "ejs");
   app.use(express.urlencoded({extended:false}));
 
-  app.use(cors());
+  app.use(cors({
+    origin: "*", // Allow all origins (adjust in production)
+    methods: ["GET", "POST", "OPTIONS"], // Allowed methods
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }));
+  
 
   mongoose.connect(mongoURL, {
     useNewUrlParser: true,
@@ -213,19 +218,22 @@
 
   app.post("/addBlockedUrl", async (req, res) => {
     const { email, url } = req.body;
-
+    
     try {
       const user = await User.findOne({ email });
       if (!user) {
         return res.status(404).send({ error: "User not found" });
       }
-
-      // Avoid duplicate URLs
-      if (!user.blockedUrls.includes(url)) {
-        user.blockedUrls.push(url);
-        await user.save();
+      
+      // Check if the URL is already blocked
+      if (user.blockedUrls.includes(url)) {
+        return res.status(400).send({ error: "URL already blocked" });
       }
-
+      
+      // Add the URL to the blockedUrls array
+      user.blockedUrls.push(url);
+      await user.save();
+      
       res.status(200).send({ status: "ok", data: "URL added to blocked list" });
     } catch (error) {
       console.error(error);

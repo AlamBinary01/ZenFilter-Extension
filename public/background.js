@@ -98,8 +98,8 @@ function fetchBlockedUrlsAndStore() {
   });
   
   // Periodically refresh the list of blocked URLs
-  setInterval(fetchBlockedUrlsAndStore, 0.5 * 60 * 1000); // Every 30 minutes
-  setInterval(fetchCustomPreferencesAndStore, 0.5 * 60 * 1000);
+  setInterval(fetchBlockedUrlsAndStore, 5 * 60 * 1000); // Every 30 minutes
+  setInterval(fetchCustomPreferencesAndStore, 5 * 60 * 1000);
   setInterval(fetchBrowserHistory, 1 * 60 * 1000); // Every hour
 
 
@@ -113,8 +113,8 @@ function fetchBlockedUrlsAndStore() {
         const containsCustomPreference = customPreferences.some(preference => tab.url.includes(preference));
   
         if (isBlockedUrl || containsCustomPreference) {
-          // For demonstration, redirecting to a dashboard page
-          chrome.tabs.update(tabId, {url: "./dashboard.html"});
+          // Correctly redirecting using chrome.tabs.update
+          chrome.tabs.update(tabId, {url: "https://zenfilter.netlify.app"});
         }
       });
     }
