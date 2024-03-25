@@ -98,8 +98,8 @@ function fetchBlockedUrlsAndStore() {
   });
   
   // Periodically refresh the list of blocked URLs
-  setInterval(fetchBlockedUrlsAndStore, 5 * 60 * 1000); // Every 30 minutes
-  setInterval(fetchCustomPreferencesAndStore, 5 * 60 * 1000);
+  setInterval(fetchBlockedUrlsAndStore, 0.5 * 60 * 1000); // Every 30 minutes
+  setInterval(fetchCustomPreferencesAndStore, 0.5 * 60 * 1000);
   setInterval(fetchBrowserHistory, 1 * 60 * 1000); // Every hour
 
 

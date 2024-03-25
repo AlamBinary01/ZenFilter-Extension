@@ -3,38 +3,60 @@ import { NsfwSpy } from './nsfw.ts';
 const nsfwSpy = new NsfwSpy(chrome.runtime.getURL('./models/model.json'));
 
 async function init() {
-    await nsfwSpy.load();
-    observeImages();
-    monitorVideos();
-    observeDOMChanges();
+    try {
+        await nsfwSpy.load();
+        continuouslyProcessContent();
+    } catch (error) {
+        console.error('Error during initialization:', error);
+    }
 }
 
-function observeImages() {
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                const img = entry.target;
-                classifyImage(img);
-                observer.unobserve(img);
-            }
-        });
-    }, { rootMargin: '50px 0px', threshold: 0.01 });
+function continuouslyProcessContent() {
+    processCurrentContent();
+    setupContinuousMonitoring();
+}
 
-    document.querySelectorAll('img:not(.processed)').forEach(img => {
-        observer.observe(img);
+function processCurrentContent() {
+    document.querySelectorAll('img:not(.processed), video:not(.processed)').forEach(node => {
+        if (node.tagName === 'IMG') {
+            classifyImage(node).catch(console.error);
+        } else if (node.tagName === 'VIDEO') {
+            processVideoFrames(node).catch(console.error);
+        }
     });
 }
 
-async function classifyImage(img) {
-    const imageUrl = img.src || img.dataset.src;
-    img.classList.add('processed');
+function setupContinuousMonitoring() {
+    let lastProcessedContentTime = Date.now();
 
+    const observer = new MutationObserver(() => {
+        // Throttle DOM mutations handling to avoid overloading
+        const now = Date.now();
+        if (now - lastProcessedContentTime > 3000) { // Check if at least 3 seconds have passed
+            processCurrentContent();
+            lastProcessedContentTime = now;
+        }
+    });
+
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+    });
+
+    // Additionally, set up a fallback interval to catch any missed content
+    setInterval(() => {
+        processCurrentContent();
+    }, 5000);
+}
+
+async function classifyImage(img) {
+    img.classList.add('processed');
+    const imageUrl = img.src || img.dataset.src;
     if (!imageUrl) return;
 
     try {
         const explicitResultPromise = nsfwSpy.classifyImageUrl(imageUrl);
         const violenceResultPromise = fetchViolenceClassification(imageUrl);
-
         const [explicitResult, violenceResult] = await Promise.all([explicitResultPromise, violenceResultPromise]);
 
         if (shouldBlur(explicitResult, violenceResult)) {
@@ -75,16 +97,26 @@ async function monitorVideos() {
     });
 }
 
+let detectionSteps = 0; // Tracks the steps of detection: notification, blur, redirect
+
 async function processVideoFrames(video) {
     let intervalId;
+    video.classList.add('processed');
+    let detectionSteps = 0; // Tracks the steps of detection: notification, blur, redirect
+
     const processFrame = throttle(async () => {
+        if (video.readyState < 2) {
+            console.log("Video metadata not loaded yet.");
+            return;
+        }
+
         const canvas = document.createElement('canvas');
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
- 	  console.log("Video Frame Captured");
+        console.log("Video Frame Captured");
 
         const blob = await new Promise(resolve => canvas.toBlob(resolve));
         const formData = new FormData();
@@ -94,40 +126,40 @@ async function processVideoFrames(video) {
             const explicitResult = await nsfwSpy.classifyImage(canvas);
             const violenceResult = await fetch('http://127.0.0.1:5000/predict', { method: 'POST', body: formData }).then(response => response.json());
 
-            if (['pornography', 'sexy', 'hentai'].includes(explicitResult.predictedLabel) || ['fight on a street', 'fire on a street', 'street violence', 'car crash', 'violence in office', 'fire in office'].includes(violenceResult.label)) {
-                showNotification("You're watching sensitive content");
-                clearInterval(intervalId);
-                redirectToDashboard();
-                return;
+            if (['pornography', 'sexy', 'hentai'].includes(explicitResult.predictedLabel) ||
+                ['fight on a street', 'fire on a street', 'street violence', 'car crash', 'violence in office', 'fire in office'].includes(violenceResult.label)) {
+
+                detectionSteps += 1;
+                
+                if (detectionSteps === 1) {
+                    showNotification("You're watching sensitive content");
+                } else if (detectionSteps === 2) {
+                    video.style.filter = 'blur(10px)';
+                } else if (detectionSteps >= 3) {
+                    redirectToDashboard();
+                    clearInterval(intervalId); // Stop processing frames
+                    return;
+                }
             }
         } catch (error) {
             console.error('Error processing video frame:', error);
         }
     }, 1000);
 
+    // Immediate frame processing and setting up interval for continuous processing
+    if (video.readyState >= 2) {
+        processFrame();
+    } else {
+        video.addEventListener('loadedmetadata', processFrame, { once: true });
+    }
+
     video.addEventListener('play', () => {
-        const interval = setInterval(() => {
-            if (video.paused || video.ended) clearInterval(interval);
-            else processFrame();
-        }, 1000);
-    });
-}
-
-function observeDOMChanges() {
-    const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-            mutation.addedNodes.forEach((node) => {
-                if (node.nodeName === 'IMG' && !node.classList.contains('processed')) {
-                    classifyImage(node);
-                }
-            });
-        });
+        if (intervalId) clearInterval(intervalId); // Clear any existing interval
+        intervalId = setInterval(processFrame, 1000);
     });
 
-    observer.observe(document.body, {
-        childList: true,
-        subtree: true,
-    });
+    video.addEventListener('pause', () => clearInterval(intervalId), { once: true });
+    video.addEventListener('ended', () => clearInterval(intervalId), { once: true });
 }
 
 async function redirectToDashboard() {
@@ -171,8 +203,7 @@ async function redirectToDashboard() {
             // For example, check if response was successful and then redirect
             if (response.ok) {
                 // Assuming you want to redirect on successful addition
-                console.log("Hahahahahaahahahahaahahah")
-                // window.location.href = "https://zenfilter.netlify.app";
+                window.location.href = "https://zenfilter.netlify.app";
             } else {
                 console.error('Failed to add blocked site: ', await response.text());
             }
@@ -237,3 +268,20 @@ function throttle(callback, limit) {
 }
 
 init();
+
+// const observer = new MutationObserver((mutations) => {
+//     mutations.forEach((mutation) => {
+//         mutation.addedNodes.forEach(node => {
+//             if (node.nodeName === 'IMG' && !node.classList.contains('processed')) {
+//                 classifyImage(node);
+//             } else if (node.nodeName === 'VIDEO' && !node.classList.contains('processed')) {
+//                 processVideoFrames(node);
+//             }
+//         });
+//     });
+// });
+
+// observer.observe(document.body, {
+//     childList: true,
+//     subtree: true,
+// });
