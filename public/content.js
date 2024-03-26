@@ -59,7 +59,13 @@ async function classifyImage(img) {
         const violenceResultPromise = fetchViolenceClassification(imageUrl);
         const [explicitResult, violenceResult] = await Promise.all([explicitResultPromise, violenceResultPromise]);
 
+        console.log('Explicit Content:', explicitResult.predictedLabel, explicitResult.confidence);
+
+        // Assuming fetchViolenceClassification also returns a result with label and confidence
+        console.log('Violence Content:', violenceResult.label, violenceResult.confidence);
+
         if (shouldBlur(explicitResult, violenceResult)) {
+            //console.log(violenceResult.label);
             applyBlur(img);
         }
     } catch (error) {
@@ -82,8 +88,8 @@ async function fetchViolenceClassification(imageUrl) {
 }
 
 function shouldBlur(explicitResult, violenceResult) {
-    return ['pornography', 'sexy', 'hentai'].includes(explicitResult.predictedLabel) ||
-           ['fight on a street', 'fire on a street', 'street violence', 'car crash', 'violence in office', 'fire in office'].includes(violenceResult.label);
+    return ['pornography', 'sexy'].includes(explicitResult.predictedLabel) ||
+           ['fight on a street', 'fire on a street', 'car crash', 'violence in office', 'fire in office', 'blood', 'bloody injuries', 'guns'].includes(violenceResult.label);
 }
 
 function applyBlur(img) {
@@ -126,11 +132,14 @@ async function processVideoFrames(video) {
             const explicitResult = await nsfwSpy.classifyImage(canvas);
             const violenceResult = await fetch('http://127.0.0.1:5000/predict', { method: 'POST', body: formData }).then(response => response.json());
 
-            if (['pornography', 'sexy', 'hentai'].includes(explicitResult.predictedLabel) ||
-                ['fight on a street', 'fire on a street', 'street violence', 'car crash', 'violence in office', 'fire in office'].includes(violenceResult.label)) {
+            if (['pornography', 'sexy'].includes(explicitResult.predictedLabel) ||
+                ['fight on a street', 'fire on a street', 'car crash', 'fire in office', 'blood', 'bloody injuries', 'guns', 'fight'].includes(violenceResult.label)) {
 
+                    console.log('Explicit Content:', explicitResult.predictedLabel, explicitResult.confidence);
+
+                    // Assuming fetchViolenceClassification also returns a result with label and confidence
+                    console.log('Violence Content:', violenceResult.label, violenceResult.confidence);  
                 detectionSteps += 1;
-                
                 if (detectionSteps === 1) {
                     showNotification("You're watching sensitive content");
                 } else if (detectionSteps === 2) {

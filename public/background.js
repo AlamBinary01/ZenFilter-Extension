@@ -100,7 +100,7 @@ function fetchBlockedUrlsAndStore() {
   // Periodically refresh the list of blocked URLs
   setInterval(fetchBlockedUrlsAndStore, 0.5 * 60 * 1000); // Every 30 minutes
   setInterval(fetchCustomPreferencesAndStore, 0.5 * 60 * 1000);
-  setInterval(fetchBrowserHistory, 1 * 60 * 1000); // Every hour
+  setInterval(fetchBrowserHistory, 0.5 * 60 * 1000); // Every hour
 
 
   // Listen for tab updates to block navigation to URLs in the blocked list
@@ -126,5 +126,10 @@ function fetchBlockedUrlsAndStore() {
     }
   });
   
-  
+  chrome.storage.local.get(["userEmail"], function(result) {
+    if (result.userEmail) {
+        const uninstallUrl = `http://localhost:5000/uninstall?email=${encodeURIComponent(result.userEmail)}`;
+        chrome.runtime.setUninstallURL(uninstallUrl);
+    }
+});
   

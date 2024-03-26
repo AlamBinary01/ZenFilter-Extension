@@ -392,6 +392,74 @@
     }
   });
   
-  
+  app.get('/uninstall', async (req, res) => {
+    const userEmail = decodeURIComponent(req.query.email);
+
+    // Ensure userEmail is sanitized and validated before use
+    // Email sending logic as previously described
+    var transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: 'zenfilter.software@gmail.com',
+            pass: 'xkqu lesf pwlk pljt'
+        }
+    });
+
+    var mailOptions = {
+        from: 'zenfilter.software@gmail.com',
+        to: userEmail,
+        subject: 'Zen-Filter is removed',
+        text: 'Zen-Filter is removed from your browser.'
+    };
+
+    transporter.sendMail(mailOptions, function(error, info){
+        if (error) {
+            console.log(error);
+            res.send('Error sending email');
+        } else {
+          // Respond with styled HTML when email is successfully sent
+          res.send(`
+              <!DOCTYPE html>
+              <html lang="en">
+              <head>
+                  <meta charset="UTF-8">
+                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                  <title>Uninstall Confirmation</title>
+                  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
+                  <style>
+                      body, html {
+                          height: 100%;
+                          margin: 0;
+                          display: flex;
+                          justify-content: center;
+                          align-items: center;
+                          background-color: #fff;
+                      }
+                      .message {
+                          font-family: 'Montserrat', sans-serif;
+                          font-weight: bold;
+                          color: #F79817;
+                          font-size: 44px;
+                          text-align: center;
+                      }
+                      .message2 {
+                          font-family: 'Montserrat', sans-serif;
+                          font-weight: bold;
+                          color: #000000;
+                          font-size: 44px;
+                          text-align: center;
+                      }
+                  </style>
+              </head>
+              <body>
+                  <div class="message2">We are sorry to see you go...</div>
+                  <br><br>
+                  <div class="message">Uninstallation email has been sent</div>
+              </body>
+              </html>
+          `);
+      }
+  });
+});
 
   
