@@ -26,7 +26,7 @@
     "mongodb": "^6.3.0",
     "mongoose": "^8.0.3",
     "node-fetch": "^2.6.13",
-    "nodemailer": "^6.9.7",
+    "nodemailer": "^6.9.9",
     "nodemon": "^3.0.2",
     "react": "^18.2.0",
     "react-dnd": "9.2.1",
