@@ -1,14 +1,16 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client'; // Import createRoot
 import './index.css';
-//  import Widget from './reportABug';
-import Feedback from './feedback';
-import AccountPage from './accountPage';
-import report from './reportABug';
+// import Feedback from './feedback';
+import ReportBug from './reportABug';
 
-ReactDOM.render(
+// Find the div with the ID of 'root' and initialize the root
+const container = document.getElementById('root');
+const root = createRoot(container); // Create a root.
+
+// Render the Feedback component using the root.render method
+root.render(
   <React.StrictMode>
-    <AccountPage/>
-  </React.StrictMode>,
-  document.getElementById('root')
+    <ReportBug />
+  </React.StrictMode>
 );
