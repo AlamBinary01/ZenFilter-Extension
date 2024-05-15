@@ -124,12 +124,13 @@ body {
 }
 
 .main-title {
-  color: #F79817;
-  font-weight: 900;
+  color: #000;
+  font-weight: bold;
   display: flex;
   justify-content: center;
   align-items: center;
-  border: 5px solid #F79817; /* Set your desired border color and width */
+  border-bottom: 5px solid #F79817; /* Set your desired border color and width */
+  border-radius: 15px;
   padding-top: 10px;
   padding-bottom: 10px;
 }
@@ -443,4 +444,25 @@ h2 {
 
 .preference-option input[type="checkbox"]:checked:before {
   transform: translateX(15px);
+}
+
+.showHistoryButton {
+  margin-top: 1px;
+  background-color: #481717;
+  color: #fff;
+  border: 3px solid #f79817;
+  border-radius: 20px;
+  padding: 3px 7px;
+  cursor: pointer;
+  display: inline-block;
+  text-align: center;
+  margin: 6px auto;
+  white-space: nowrap;
+  font-weight: 600; /* semi-bold is usually achieved with numerical values around 600 */
+}
+
+.showHistoryButton:hover {
+  background-color: #f79817; /* Example hover effect: change background */
+  color: #481717; /* Change text color on hover */
+  border-color: #fff; /* Optional: change border color on hover */
 }

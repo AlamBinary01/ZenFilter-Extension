@@ -7,11 +7,11 @@ import
 
  const StyledImage = styled.img`
  position: absolute; // Position the image absolutely within the container
- top: -50px; // Align to the top
- left: -20px; // Align to the left
+ top: 10px; // Align to the top
+ left: 10px; // Align to the left
  width: 15%; // Set the width to 100% to make it responsive
- height: 25%; // Set the maximum height if needed
- object-fit: cover; // Maintain the aspect ratio while covering the container
+ height: 15%; // Set the maximum height if needed
+ object-fit: contain; // Maintain the aspect ratio while covering the container
 `;
 
  function Sidebar({ openSidebarToggle, toggleSidebar, handleAboutClick, handlePreferencesClick, handleBlockClick, handleBlockWebsites, handleSettings}) {
@@ -19,7 +19,7 @@ import
     <aside id="sidebar" className={openSidebarToggle ? "sidebar-responsive": ""}>
         <div className='sidebar-title'>
             <div className='sidebar-brand'>
-                <StyledImage src="/images/VAR.png" alt = 'logo'/>
+                <StyledImage src="/images/whitetxt.png" alt = 'logo'/>
             </div>
             <span className='icon close_icon' onClick={toggleSidebar}>X</span>
         </div>

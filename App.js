@@ -10,6 +10,10 @@
   var nodemailer = require("nodemailer");
   const fetch = require('node-fetch');
 
+  function isValidPassword(password) {
+    const passwordRegex = /^(?=.*\d.*\d)[a-zA-Z0-9]{8,}$/;
+    return passwordRegex.test(password);
+  }
 
   app.set("view engine", "ejs");
   app.use(express.urlencoded({extended:false}));
@@ -43,6 +47,23 @@
   });
 
   const User = mongoose.model("UserInfo", userSchema);
+
+  const feedbackSchema = new mongoose.Schema({
+    email: { type: String, required: true },
+    category: { type: String, required: true },
+    comment: { type: String, required: true }
+  });
+  
+  const Feedback = mongoose.model("Feedback", feedbackSchema);
+
+  const bugReportSchema = new mongoose.Schema({
+    email: { type: String, required: true },
+    description: { type: String, required: true },
+    severity: { type: String, required: true },
+    screenshot: String 
+});
+
+const BugReport = mongoose.model('BugReport', bugReportSchema);
 
   app.post("/register", async (req, res) => {
     const { name, email, password } = req.body;
@@ -255,7 +276,7 @@
       }
 
       // User found, return their blocked URLs
-      res.status(200).send({ status: "ok", blockedUrls: user.blockedUrls });
+      res.status(200).send({ status: "ok", blockedUrls: user.blockedUrls, count: user.blockedUrls.length });
     } catch (error) {
       console.error(error);
       res.status(500).send({ status: "error", error: "Failed to retrieve blocked URLs" });
@@ -319,7 +340,7 @@
       }
 
       // User found, return their custom preferences
-      res.status(200).send({ status: "ok", customPreferences: user.customPreferences });
+      res.status(200).send({ status: "ok", customPreferences: user.customPreferences, count: user.customPreferences.length });
     } catch (error) {
       console.error(error);
       res.status(500).send({ status: "error", error: "Failed to retrieve custom preferences" });
@@ -462,4 +483,206 @@
   });
 });
 
-  
+app.post("/updateEmail", async (req, res) => {
+  const { token, currentEmail, newEmail } = req.body;
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const user = await User.findOne({ email: decoded.email });
+
+    if (!user) {
+      return res.status(404).json({ status: "error", error: "User not found" });
+    }
+
+    if (user.email !== currentEmail) {
+      return res.status(400).json({ status: "error", error: "Current email does not match." });
+    }
+
+    const emailValidation = await emailValidator.validate({ email: newEmail });
+    if (!emailValidation.valid) {
+      return res.status(400).json({ status: "error", error: "Invalid email format." });
+    }
+
+    const emailExists = await User.findOne({ email: newEmail });
+    if (emailExists) {
+      return res.status(400).json({ status: "error", error: "Email already in use." });
+    }
+
+    user.email = newEmail;
+    await user.save();
+    res.json({ status: "ok", message: "Email updated successfully." });
+  } catch (error) {
+    console.error("Error updating email:", error);
+    res.status(500).json({ status: "error", error: "Server error" });
+  }
+});
+
+app.post("/updatePassword", async (req, res) => {
+  const { token, currentPassword, newPassword } = req.body;
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const user = await User.findOne({ email: decoded.email });
+
+    if (!user) {
+      return res.status(404).json({ status: "error", error: "User not found" });
+    }
+
+    const passwordMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!passwordMatch) {
+      return res.status(400).json({ status: "error", error: "Current password is incorrect." });
+    }
+
+    if (!isValidPassword(newPassword)) {
+      return res.status(400).json({ status: "error", error: "Invalid password format." });
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+    res.json({ status: "ok", message: "Password updated successfully." });
+  } catch (error) {
+    console.error("Error updating password:", error);
+    res.status(500).json({ status: "error", error: "Server error" });
+  }
+});
+
+// Assuming JWT_SECRET and User model are already defined as shown in your previous snippets
+
+app.post("/deleteAccount", async (req, res) => {
+  // Authenticate and decode the token
+  const token = req.headers.authorization?.split(" ")[1]; // 'Bearer TOKEN_HERE'
+  if (!token) {
+      return res.status(401).json({ status: "error", error: "No authorization token provided" });
+  }
+
+  try {
+      const decoded = jwt.verify(token, JWT_SECRET); // Verifies token and gets the decoded payload
+      const user = await User.findOne({ email: decoded.email });
+
+      if (!user) {
+          return res.status(404).json({ status: "error", error: "User not found" });
+      }
+
+      // Delete the user from the database
+      await User.deleteOne({ _id: user._id });
+      res.json({ status: "ok", message: "Account successfully deleted" });
+  } catch (error) {
+      console.error("Error deleting account:", error);
+      if (error.name === "JsonWebTokenError") {
+          return res.status(401).json({ status: "error", error: "Invalid token" });
+      }
+      res.status(500).json({ status: "error", error: "Server error" });
+  }
+});
+
+app.post("/feedback", async (req, res) => {
+  if (!req.headers.authorization) {
+    return res.status(401).json({ status: "error", error: "Authorization header is required" });
+  }
+
+  const token = req.headers.authorization.split(" ")[1]; // Assume the token is sent in the Authorization header
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const userEmail = decoded.email; // Assuming email is encoded in the token
+
+    const { category, comment } = req.body;
+
+    if (!userEmail || !category || !comment) {
+      return res.status(400).json({ status: "error", error: "All fields are required" });
+    }
+
+    // Save feedback to MongoDB
+    const newFeedback = new Feedback({ email: userEmail, category, comment });
+    await newFeedback.save();
+
+    // Send an email notification using the user's email
+    var transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: 'zenfilter.software@gmail.com', // This should be your service email
+        pass: 'xkqu lesf pwlk pljt' // Your email password
+      }
+    });
+
+    var mailOptions = {
+      from: 'zenfilter.software@gmail.com',
+      to: userEmail,
+      subject: 'Feedback Received',
+      text: `Thank you for your feedback! \nCategory: ${category} \nComment: ${comment}`
+    };
+
+    transporter.sendMail(mailOptions, function(error, info){
+      if (error) {
+        console.error('Failed to send feedback email:', error);
+        return res.status(500).json({ status: "error", error: "Failed to send email" });
+      }
+      res.json({ status: "ok", message: "Feedback submitted successfully and email sent" });
+    });
+  } catch (error) {
+    console.error('Failed to process feedback:', error);
+    return res.status(500).json({ status: "error", error: "Failed to verify token or save feedback" });
+  }
+});
+
+app.post("/reportBug", async (req, res) => {
+  // Ensure the request contains the Authorization header
+  if (!req.headers.authorization) {
+      return res.status(401).json({ status: "error", error: "Authorization header is required" });
+  }
+
+  const token = req.headers.authorization.split(" ")[1];
+  let userEmail;
+  try {
+      const decoded = jwt.verify(token, JWT_SECRET);
+      userEmail = decoded.email; // Extract the email from the token
+  } catch (error) {
+      return res.status(401).json({ status: "error", error: "Invalid or expired token" });
+  }
+
+  const { description, severity, screenshot } = req.body; // Assuming these are the fields posted
+
+  if (!description || !severity) {
+      return res.status(400).json({ status: "error", error: "Description and severity are required" });
+  }
+
+  // Assuming BugReport is a mongoose model you've defined
+  const newBugReport = new BugReport({
+      email: userEmail,
+      description,
+      severity,
+      screenshot // Optional, handling of screenshots must be implemented if needed
+  });
+
+  try {
+      await newBugReport.save();
+
+      // Setup nodemailer to send an email notification
+      var transporter = nodemailer.createTransport({
+          service: 'gmail',
+          auth: {
+              user: 'zenfilter.software@gmail.com',
+              pass: 'xkqu lesf pwlk pljt'
+          }
+      });
+
+      var mailOptions = {
+          from: 'zenfilter.software@gmail.com',
+          to: userEmail, // Send to the user's email retrieved from the token
+          subject: 'Bug Report Submitted',
+          text: `Your bug report has been received:\nDescription: ${description}\nSeverity: ${severity}`
+      };
+
+      transporter.sendMail(mailOptions, function(error, info){
+          if (error) {
+              console.log(error);
+              return res.status(500).json({ status: "error", error: "Failed to send email" });
+          } else {
+              res.json({ status: "ok", message: "Bug report submitted successfully and email sent" });
+          }
+      });
+  } catch (error) {
+      console.error('Error saving bug report:', error);
+      res.status(500).json({ status: "error", error: "Failed to process bug report" });
+  }
+});
+

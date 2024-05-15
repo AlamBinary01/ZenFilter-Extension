@@ -30,9 +30,9 @@ function setupContinuousMonitoring() {
     let lastProcessedContentTime = Date.now();
 
     const observer = new MutationObserver(() => {
-        // Throttle DOM mutations handling to avoid overloading
+
         const now = Date.now();
-        if (now - lastProcessedContentTime > 3000) { // Check if at least 3 seconds have passed
+        if (now - lastProcessedContentTime > 3000) {
             processCurrentContent();
             lastProcessedContentTime = now;
         }
@@ -43,7 +43,6 @@ function setupContinuousMonitoring() {
         subtree: true,
     });
 
-    // Additionally, set up a fallback interval to catch any missed content
     setInterval(() => {
         processCurrentContent();
     }, 5000);
@@ -61,7 +60,6 @@ async function classifyImage(img) {
 
         console.log('Explicit Content:', explicitResult.predictedLabel, explicitResult.confidence);
 
-        // Assuming fetchViolenceClassification also returns a result with label and confidence
         console.log('Violence Content:', violenceResult.label, violenceResult.confidence);
 
         if (shouldBlur(explicitResult, violenceResult)) {
@@ -89,7 +87,7 @@ async function fetchViolenceClassification(imageUrl) {
 
 function shouldBlur(explicitResult, violenceResult) {
     return ['pornography', 'sexy'].includes(explicitResult.predictedLabel) ||
-           ['fight on a street', 'fire on a street', 'car crash', 'violence in office', 'fire in office', 'blood', 'bloody injuries', 'guns'].includes(violenceResult.label);
+           ['fight on a street', 'fire on a street', 'fire in office', 'bloody injuries', 'guns', 'boxing','blood','car crash'].includes(violenceResult.label);
 }
 
 function applyBlur(img) {
@@ -103,12 +101,12 @@ async function monitorVideos() {
     });
 }
 
-let detectionSteps = 0; // Tracks the steps of detection: notification, blur, redirect
+let detectionSteps = 0; 
 
 async function processVideoFrames(video) {
     let intervalId;
     video.classList.add('processed');
-    let detectionSteps = 0; // Tracks the steps of detection: notification, blur, redirect
+    let detectionSteps = 0; 
 
     const processFrame = throttle(async () => {
         if (video.readyState < 2) {
@@ -133,11 +131,9 @@ async function processVideoFrames(video) {
             const violenceResult = await fetch('http://127.0.0.1:5000/predict', { method: 'POST', body: formData }).then(response => response.json());
 
             if (['pornography', 'sexy'].includes(explicitResult.predictedLabel) ||
-                ['fight on a street', 'fire on a street', 'car crash', 'fire in office', 'blood', 'bloody injuries', 'guns', 'fight'].includes(violenceResult.label)) {
+                ['fight on a street', 'fire on a street', 'fire in office', 'bloody injuries', 'guns', 'boxing'].includes(violenceResult.label)) {
 
                     console.log('Explicit Content:', explicitResult.predictedLabel, explicitResult.confidence);
-
-                    // Assuming fetchViolenceClassification also returns a result with label and confidence
                     console.log('Violence Content:', violenceResult.label, violenceResult.confidence);  
                 detectionSteps += 1;
                 if (detectionSteps === 1) {
@@ -146,16 +142,15 @@ async function processVideoFrames(video) {
                     video.style.filter = 'blur(10px)';
                 } else if (detectionSteps >= 3) {
                     redirectToDashboard();
-                    clearInterval(intervalId); // Stop processing frames
+                    clearInterval(intervalId); 
                     return;
                 }
             }
         } catch (error) {
             console.error('Error processing video frame:', error);
         }
-    }, 1000);
+    }, 4000);
 
-    // Immediate frame processing and setting up interval for continuous processing
     if (video.readyState >= 2) {
         processFrame();
     } else {
@@ -163,7 +158,7 @@ async function processVideoFrames(video) {
     }
 
     video.addEventListener('play', () => {
-        if (intervalId) clearInterval(intervalId); // Clear any existing interval
+        if (intervalId) clearInterval(intervalId); 
         intervalId = setInterval(processFrame, 1000);
     });
 
@@ -174,7 +169,7 @@ async function processVideoFrames(video) {
 async function redirectToDashboard() {
     const currentUrl = window.location.origin;
 
-    // Use a Promise to wait for the email value
+
     const email = await new Promise((resolve, reject) => {
         chrome.storage.local.get(["userEmail"], (result) => {
             if (chrome.runtime.lastError) {
@@ -185,7 +180,6 @@ async function redirectToDashboard() {
         });
     });
 
-    // Now get the token the same way, for consistency and to handle possible errors
     const token = await new Promise((resolve, reject) => {
         chrome.storage.local.get(["token"], (result) => {
             if (chrome.runtime.lastError) {
@@ -196,7 +190,6 @@ async function redirectToDashboard() {
         });
     });
 
-    // Proceed if token is available
     if (token) {
         try {
             const response = await fetch("http://localhost:5000/addBlockedUrl", {
@@ -208,10 +201,8 @@ async function redirectToDashboard() {
                 body: JSON.stringify({ email, url: currentUrl }),
             });
 
-            // Handle response...
-            // For example, check if response was successful and then redirect
+           
             if (response.ok) {
-                // Assuming you want to redirect on successful addition
                 window.location.href = "https://zenfilter.netlify.app";
             } else {
                 console.error('Failed to add blocked site: ', await response.text());
@@ -227,13 +218,11 @@ async function redirectToDashboard() {
   
 
 function showNotification(message) {
-    // Check if a notification already exists, if so, remove it
     const existingNotification = document.getElementById('customNotification');
     if (existingNotification) {
         existingNotification.remove();
     }
 
-    // Create the notification element
     const notification = document.createElement('div');
     notification.id = 'customNotification';
     notification.textContent = message;
@@ -253,10 +242,8 @@ function showNotification(message) {
     notification.style.maxWidth = '80%';
     notification.style.boxShadow = '0 4px 6px rgba(0,0,0,0.2)';
 
-    // Append the notification to the body
     document.body.appendChild(notification);
 
-    // Automatically remove the notification after 5 seconds
     setTimeout(() => {
         notification.remove();
     }, 5000);

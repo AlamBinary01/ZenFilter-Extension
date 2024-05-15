@@ -14,4 +14,19 @@
     background: #f79817;
     color: black;
   }
+
+  .backArrow {
+    position: absolute;
+    top: 60px;
+    left: 260px;
+    padding: 10px;
+    font-size: 1.2em;
+    color: #333;
+    cursor: pointer;
+  }
+  
+  .backArrow:hover {
+    color: #f79817;
+  }
+  
   

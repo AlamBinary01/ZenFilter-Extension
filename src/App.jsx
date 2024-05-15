@@ -16,79 +16,69 @@ function App() {
   const [showBlockedPage, setBlockedPage] = useState(false);
   const [showBlockedWebsites, setBlockedWebsites] = useState(false);
   const [showSettings, setSettings] = useState(false);
+  const [showHistoryPage, setShowHistoryPage] = useState(false);
 
   const toggleSidebar = () => {
     setOpenSidebarToggle(!openSidebarToggle);
   };
 
-  const handlePreferencesClick = () => {
-    setAboutPage(false);
-    setPreferencesPage(true);
-    setBlockedPage(false);
-    setBlockedWebsites(false);
-    setSettings(false);
-    toggleSidebar();
-  };
-
-  const handleAboutClick = () => {
-    setAboutPage(true);
-    setPreferencesPage(false);
-    setBlockedPage(false);
-    setBlockedWebsites(false);
-    setSettings(false);
-    toggleSidebar();
-  };
-
-  const handleBlockClick = () => {
+  const handleNavigation = (page) => {
+    // Reset all page states
     setAboutPage(false);
     setPreferencesPage(false);
-    setBlockedPage(true);
+    setBlockedPage(false);
+    setShowHistoryPage(false);
     setBlockedWebsites(false);
     setSettings(false);
-    toggleSidebar();
-  };
 
-  const handleBlockWebsites = () => {
-    setAboutPage(false);
-    setBlockedPage(false);
-    setPreferencesPage(false);
-    setBlockedWebsites(true);
-    setSettings(false);
-  };
-
-  const handleSettings = () => {
-    setAboutPage(false);
-    setBlockedPage(false);
-    setPreferencesPage(false);
-    setBlockedWebsites(false);
-    setSettings(true);
-  };
-
-  const handleAddCustomPreference = () => {
-    // Handle redirection or additional logic when the "+" button is clicked
-    // For now, let's redirect to the BlockWebsitesPage
-    handleBlockWebsites();
+    // Set the requested page to true
+    switch(page) {
+      case 'about':
+        setAboutPage(true);
+        break;
+      case 'preferences':
+        setPreferencesPage(true);
+        break;
+      case 'blockedApps':
+        setBlockedPage(true);
+        break;
+      case 'blockedWebsites':
+        setBlockedWebsites(true);
+        break;
+      case 'settings':
+        setSettings(true);
+        break;
+      case 'history':
+        setShowHistoryPage(true);
+        break;
+      default:
+        // No default action
+    }
+    
+    toggleSidebar(); // Optionally toggle sidebar state
   };
 
   return (
     <div className='grid-container'>
       <Header toggleSidebar={toggleSidebar} />
       <Sidebar
-        handleAboutClick={handleAboutClick}
-        handlePreferencesClick={handlePreferencesClick}
-        handleBlockClick={handleBlockClick}
-        handleBlockWebsites={handleBlockWebsites}
-        handleSettings={handleSettings}
-        handleAddCustomPreference={handleAddCustomPreference}
+        handleAboutClick={() => handleNavigation('about')}
+        handlePreferencesClick={() => handleNavigation('preferences')}
+        handleBlockClick={() => handleNavigation('blockedApps')}
+        handleBlockWebsites={() => handleNavigation('blockedWebsites')}
+        handleSettings={() => handleNavigation('settings')}
+        handleAddCustomPreference={() => handleNavigation('blockedWebsites')} // Assuming this should navigate to blocked websites
+        handleShowHistoryPage={() => handleNavigation('history')}
       />
-      {showAboutPage ? <Services /> : null}
-      {showPreferencesPage ? <Preferences /> : null}
-      {showBlockedPage ? <BlockedAppsPage /> : null}
-      {showBlockedWebsites ? <BlockWebsitesPage /> : null}
-      {showSettings ? <SettingsPage /> : null}
-      {!showAboutPage && !showPreferencesPage && !showBlockedPage && !showBlockedWebsites && !showSettings ? (
-        <Home />
-      ) : null}
+      {showAboutPage && <Services />}
+      {showPreferencesPage && <Preferences />}
+      {showBlockedPage && <BlockedAppsPage />}
+      {showBlockedWebsites && <BlockWebsitesPage />}
+      {showSettings && <SettingsPage />}
+      {showHistoryPage && <BlockedAppsPage />}
+      {!showAboutPage && !showPreferencesPage && !showBlockedPage && !showBlockedWebsites && !showSettings && !showHistoryPage && (
+        <Home onShowHistory={() => handleNavigation('history')} />
+      )}
     </div>
   );
 }

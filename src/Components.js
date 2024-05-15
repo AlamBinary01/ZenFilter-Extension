@@ -67,12 +67,19 @@ margin: 0;
 export const Input = styled.input`
 background-color: #eee;
 border: none;
-border-radius: 64px;
 padding: 12px 15px;
 margin: 8px 0;
 width: 100%;
 `;
 
+export const Input1 = styled.input`
+background-color: #eee;
+border: none;
+border-radius: 64px;
+padding: 12px 15px;
+margin: 8px 0;
+width: 100%;
+`;
 
 export const Button = styled.button`
    border-radius: 20px;
@@ -173,11 +180,11 @@ export const Paragraph = styled.p`
 
 export const StyledImage = styled.img`
   position: absolute; // Position the image absolutely within the container
-  top: -8px; // Align to the top
-  left: -15px; // Align to the left
+  top: 7px; // Align to the top
+  left: 3px; // Align to the left
   width: 35%; // Set the width to 100% to make it responsive
   max-height: 70px; // Set the maximum height if needed
-  object-fit: cover; // Maintain the aspect ratio while covering the container
+  object-fit: contain; // Maintain the aspect ratio while covering the container
 `;
 export const fadeIn = keyframes`
   from {

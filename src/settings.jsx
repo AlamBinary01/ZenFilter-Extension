@@ -1,30 +1,70 @@
 import React, { useState, useEffect } from 'react';
 import './setting.css';
+import AccountSettings from './AccountSettings.jsx'; // Ensure the path is correct
+import Feedback from './Feedback.jsx'; // Import the Feedback component
+import ReportBug from './RPBug.jsx'; // Import the ReportBug component
 
 const SettingsPage = () => {
-  const [userData, setUserData] = useState({
-    ud:""
-  });
+  const [userData, setUserData] = useState({ ud: "" });
+  const [showAccountSettings, setShowAccountSettings] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
+  const [showReportBug, setShowReportBug] = useState(false);
 
   useEffect(() => {
     fetch("http://localhost:5000/userData", {
       method: "POST",
-      crossDomain: true,
       headers: {
         "Content-Type": "application/json",
-        Accept: "application/json",
+        "Accept": "application/json",
         "Access-Control-Allow-Origin": "*"
       },
-      body: JSON.stringify({
-        token: window.localStorage.getItem("token"),
-      }),
+      body: JSON.stringify({ token: window.localStorage.getItem("token") }),
     })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data, "userData");
-        setUserData({ud: data.data});
-      });
+    .then(res => res.json())
+    .then(data => {
+      setUserData({ ud: data.data });
+    });
   }, []);
+
+  const handleLogout = () => {
+    window.localStorage.clear();
+    window.close(); // Closes the browser tab
+  };
+
+  const handleDeleteAccount = () => {
+    // Placeholder for account deletion logic
+    alert('Account deletion functionality not implemented.');
+  };
+
+  // Handle showing the feedback form
+  const handleShowFeedback = () => {
+    setShowFeedback(true);
+  };
+
+  // Handle showing the bug report form
+  const handleShowReportBug = () => {
+    setShowReportBug(true);
+  };
+
+  // Optionally handle going back from feedback to settings
+  const handleBackToSettings = () => {
+    setShowFeedback(false);
+    setShowReportBug(false);
+  };
+
+  if (showAccountSettings) {
+    return <AccountSettings onBack={handleBackToSettings} />;
+  }
+
+  if (showFeedback) {
+    return <Feedback onBack={handleBackToSettings} />;
+  }
+
+  if (showReportBug) {
+    return <ReportBug onBack={handleBackToSettings} />;
+  }
 
   return (
     <div style={containerStyle}>
@@ -32,9 +72,9 @@ const SettingsPage = () => {
 
       {/* User Information Section */}
       <div style={userInfoContainerStyle}>
-        <div style={profilePictureStyle}> {/* Add your profile picture here */}</div>
+        <div style={profilePictureStyle}></div>
         <div style={userInfoStyle}>
-        {userData.ud ? (
+          {userData.ud ? (
             <>
               <p style={userNameStyle}>{userData.ud.name}</p>
               <p style={userEmailStyle}>{userData.ud.email}</p>
@@ -48,28 +88,51 @@ const SettingsPage = () => {
       {/* General Settings Section */}
       <div style={sectionStyle}>
         <h3 style={sectionTitleStyle}>General</h3>
-        <button class='buttonStyle'>Account    {'>'}</button>
-        <button class='buttonStyle'>Logout              {'>'}</button>
-        <button class='buttonStyle'>Delete Account      {'>'}</button>
+        <button className='buttonStyle' onClick={() => setShowAccountSettings(true)}>Account {'>'}</button>
+        <button className='buttonStyle' onClick={() => setShowLogoutModal(true)}>Logout {'>'}</button>
+        <button className='buttonStyle' onClick={() => setShowDeleteAccountModal(true)}>Delete Account {'>'}</button>
       </div>
 
       {/* Feedback Section */}
       <div style={sectionStyle}>
         <h3 style={sectionTitleStyle}>Feedback</h3>
-        <button class='buttonStyle'>Report a Bug        {'>'}</button>
-        <button class='buttonStyle'>Send Feedback       {'>'}</button>
+        <button className='buttonStyle' onClick={handleShowReportBug}>Report a Bug {'>'}</button>
+        <button className='buttonStyle' onClick={handleShowFeedback}>Send Feedback {'>'}</button>
       </div>
+
+      {/* Logout Modal */}
+      {showLogoutModal && (
+        <div className="modal">
+          <div className="modal-content">
+            <p>Are you sure?</p>
+            <button onClick={handleLogout}>Yes</button>
+            <button onClick={() => setShowLogoutModal(false)}>No</button>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Account Modal */}
+      {showDeleteAccountModal && (
+        <div className="modal">
+          <div className="modal-content">
+            <p>Do you really want to delete your account?</p>
+            <button onClick={handleDeleteAccount}>Yes</button>
+            <button onClick={() => setShowDeleteAccountModal(false)}>No</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
+// Style definitions
 const containerStyle = {
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'flex-start',
   padding: '20px',
-  height: '100vh', // Ensures the content takes at least the full height of the viewport
+  height: '100vh',
   paddingLeft: '500px',
 };
 
@@ -78,7 +141,7 @@ const pageTitleStyle = {
   borderRadius: '15px',
   padding: '8px',
   color: '#F79817',
-  fontWeight : 'bold'
+  fontWeight: 'bold'
 };
 
 const userInfoContainerStyle = {
@@ -92,7 +155,7 @@ const profilePictureStyle = {
   width: '50px',
   height: '50px',
   borderRadius: '50%',
-  backgroundColor: '#ddd', // Replace with the actual profile picture or background color
+  backgroundColor: '#ddd',
   marginBottom: '10px',
 };
 
@@ -120,6 +183,5 @@ const sectionTitleStyle = {
   fontSize: '18px',
   marginBottom: '10px',
 };
-
 
 export default SettingsPage;
