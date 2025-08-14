@@ -14,7 +14,7 @@
     "@hapi/hapi": "^21.3.2",
     "@hapi/joi": "^17.1.1",
     "dotenv": "^16.3.1",
-    "mongoose": "^8.0.3",
+    "mongoose": "^8.8.3",
     "nodemon": "^3.0.2"
   }
 }
